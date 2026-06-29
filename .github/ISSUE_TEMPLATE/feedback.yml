@@ -1,0 +1,40 @@
+name: Tester feedback
+description: Share usability feedback for SkinCheck Lab.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing SkinCheck Lab. Do not attach face photos. Please share text feedback only.
+  - type: textarea
+    id: device
+    attributes:
+      label: Device and browser
+      description: Example: iPhone Safari, Android Chrome, Mac Chrome
+    validations:
+      required: true
+  - type: textarea
+    id: flow
+    attributes:
+      label: What did you test?
+      description: Camera capture, photo selection, quality screen, analysis report, product recommendations
+    validations:
+      required: true
+  - type: textarea
+    id: trust
+    attributes:
+      label: Did it feel trustworthy?
+      description: Which parts felt careful, overconfident, confusing, or useful?
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Product recommendation feedback
+      description: Did the recommendation feel relevant? What felt wrong or risky?
+  - type: textarea
+    id: bugs
+    attributes:
+      label: Bugs or blockers
+      description: Include steps to reproduce if possible.
