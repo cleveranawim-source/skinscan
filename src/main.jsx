@@ -441,7 +441,7 @@ function AppHeader({ title, onBack }) {
         <span />
       )}
       <h1>{title}</h1>
-      <span />
+      <span className="header-dot" />
     </header>
   );
 }
@@ -468,21 +468,23 @@ function GuideFrame({ imageUrl, mode = 'guide' }) {
 
 function EmptyScreen({ onUpload, onOpenCamera }) {
   return (
-    <main className="screen capture">
-      <AppHeader title="SkinCheck" />
+    <main className="screen capture-screen">
+      <AppHeader title="SkinScan" />
       <section className="capture-hero">
-        <p>피부 사진 분석</p>
-        <h2>정확한 촬영이 분석 품질을 결정합니다.</h2>
-        <span>정면, 균일한 조명, 무보정 사진을 기준으로 품질을 먼저 판정합니다.</span>
+        <div>
+          <p>PHOTO-BASED SKIN CHECK</p>
+          <h2>촬영 품질부터 엄격하게 확인합니다.</h2>
+          <span>사진 한 장으로 단정하지 않고, 조명과 선명도에 따라 결과 신뢰도를 낮춰 표시합니다.</span>
+        </div>
       </section>
       <div className="capture-actions primary-entry">
         <button className="primary-button" onClick={onOpenCamera}>
           <Camera />
-          카메라 촬영
+          촬영 시작
         </button>
         <label className="secondary-upload">
           <ImagePlus />
-          사진 선택
+          앨범에서 선택
           <input type="file" accept="image/*" onChange={onUpload} />
         </label>
       </div>
@@ -500,13 +502,13 @@ function EmptyScreen({ onUpload, onOpenCamera }) {
       <section className="trust-panel compact">
         <div>
           <ShieldCheck />
-          <strong>품질 부족 사진은 걸러냅니다</strong>
-          <p>밝기, 반사, 선명도, 해상도를 먼저 보고 결과 신뢰도를 조정합니다.</p>
+          <strong>품질 점검 후 분석</strong>
+          <p>밝기, 반사, 선명도, 해상도가 낮으면 분석 신뢰도를 낮춥니다.</p>
         </div>
         <div>
           <Lock />
-          <strong>사진은 브라우저 안에서 처리됩니다</strong>
-          <p>테스트 버전은 서버 업로드나 외부 분석 API를 사용하지 않습니다.</p>
+          <strong>브라우저 내부 처리</strong>
+          <p>현재 테스트 버전은 얼굴 사진을 서버로 보내지 않습니다.</p>
         </div>
       </section>
       <FeedbackButton />
@@ -611,11 +613,11 @@ function CameraScreen({ onClose, onCaptured }) {
   );
 }
 
-function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onReset }) {
+function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetake, onReset }) {
   const passCount = analysis.quality.filter((item) => item.pass).length;
   const gateLabel = analysis.qualityScore >= 72 ? '분석 가능' : analysis.qualityScore >= 55 ? '제한적 분석' : '재촬영 권장';
   return (
-    <main className="screen">
+    <main className="screen quality-screen">
       <AppHeader title="촬영 품질" onBack={onReset} />
       <section className="quality-hero">
         <GuideFrame imageUrl={imageUrl} mode="scan" />
@@ -640,16 +642,19 @@ function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onReset }) {
         <p>{passCount}/4개 조건이 통과되었습니다. 통과하지 못한 항목은 결과의 신뢰도를 자동으로 낮춥니다.</p>
       </section>
       <div className="action-row quality-actions">
-        <label className="secondary-upload">
+        <button className="secondary-button" onClick={onRetake}>
           <RotateCcw />
-          다시 선택
-          <input type="file" accept="image/*" onChange={onUpload} />
-        </label>
+          다시 촬영
+        </button>
         <button className="primary-button" onClick={onAnalyze}>
           <ScanLine />
           분석 실행
         </button>
       </div>
+      <label className="text-upload">
+        앨범 사진으로 변경
+        <input type="file" accept="image/*" onChange={onUpload} />
+      </label>
     </main>
   );
 }
@@ -678,7 +683,7 @@ function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
   const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
   const recommendations = buildRecommendations(analysis);
   return (
-    <main className="screen report">
+    <main className="screen report-screen">
       <AppHeader title="분석 리포트" onBack={onBack} />
       <section className="report-hero">
         <div>
@@ -760,7 +765,7 @@ function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
 
 function DetailScreen({ metric, analysis, onBack }) {
   return (
-    <main className="screen detail">
+    <main className="screen detail-screen">
       <AppHeader title={metric.label} onBack={onBack} />
       <section className="detail-score-card">
         <div>
@@ -910,6 +915,7 @@ function App() {
           analysis={analysis}
           onUpload={handleUpload}
           onAnalyze={() => setStage('report')}
+          onRetake={() => setStage('camera')}
           onReset={() => {
             setImageUrl('');
             setAnalysis(null);
