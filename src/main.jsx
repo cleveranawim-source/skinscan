@@ -469,30 +469,13 @@ function GuideFrame({ imageUrl, mode = 'guide' }) {
 function EmptyScreen({ onUpload, onOpenCamera }) {
   return (
     <main className="screen capture">
-      <AppHeader title="SkinCheck Lab" />
-      <section className="hero-copy">
-        <p>사진 기반 피부 분석</p>
-        <h2>먼저 사진이 분석 가능한지 검증합니다.</h2>
+      <AppHeader title="SkinCheck" />
+      <section className="capture-hero">
+        <p>피부 사진 분석</p>
+        <h2>정확한 촬영이 분석 품질을 결정합니다.</h2>
+        <span>정면, 균일한 조명, 무보정 사진을 기준으로 품질을 먼저 판정합니다.</span>
       </section>
-      <GuideFrame mode="guide" />
-      <section className="protocol-strip">
-        {protocolSteps.map((step) => (
-          <span key={step}>{step}</span>
-        ))}
-      </section>
-      <section className="trust-panel">
-        <div>
-          <ShieldCheck />
-          <strong>품질 게이트 우선</strong>
-          <p>어둡거나 흔들린 사진은 점수 신뢰도를 낮춰 표시합니다.</p>
-        </div>
-        <div>
-          <Lock />
-          <strong>브라우저 안에서 처리</strong>
-          <p>이 프로토타입은 업로드 사진을 서버로 보내지 않습니다.</p>
-        </div>
-      </section>
-      <div className="capture-actions">
+      <div className="capture-actions primary-entry">
         <button className="primary-button" onClick={onOpenCamera}>
           <Camera />
           카메라 촬영
@@ -503,6 +486,29 @@ function EmptyScreen({ onUpload, onOpenCamera }) {
           <input type="file" accept="image/*" onChange={onUpload} />
         </label>
       </div>
+      <section className="capture-preview-panel">
+        <GuideFrame mode="guide" />
+        <div className="capture-checklist">
+          {protocolSteps.map((step) => (
+            <span key={step}>
+              <CheckCircle2 />
+              {step}
+            </span>
+          ))}
+        </div>
+      </section>
+      <section className="trust-panel compact">
+        <div>
+          <ShieldCheck />
+          <strong>품질 부족 사진은 걸러냅니다</strong>
+          <p>밝기, 반사, 선명도, 해상도를 먼저 보고 결과 신뢰도를 조정합니다.</p>
+        </div>
+        <div>
+          <Lock />
+          <strong>사진은 브라우저 안에서 처리됩니다</strong>
+          <p>테스트 버전은 서버 업로드나 외부 분석 API를 사용하지 않습니다.</p>
+        </div>
+      </section>
       <FeedbackButton />
       <p className="medical-note">미용 관리 참고용이며 질병 진단이나 치료 판단을 대신하지 않습니다.</p>
     </main>
@@ -576,11 +582,17 @@ function CameraScreen({ onClose, onCaptured }) {
       <section className="camera-preview">
         <video ref={videoRef} playsInline muted />
         <div className="oval-guide" />
-        <div className="camera-hud">
-          <span>정면 얼굴</span>
-          <span>그림자 최소화</span>
-          <span>필터 없음</span>
+        <div className="camera-topbar">
+          <span>얼굴을 타원 안에 맞추세요</span>
         </div>
+        <div className="camera-hud">
+          <span>정면</span>
+          <span>밝은 조명</span>
+          <span>무보정</span>
+        </div>
+        <button className="shutter-button" onClick={captureFrame} disabled={!ready} aria-label="촬영">
+          <Camera />
+        </button>
       </section>
       <section className={`camera-status ${error ? 'error' : ''}`}>
         {error ? <XCircle /> : <Info />}
@@ -592,7 +604,7 @@ function CameraScreen({ onClose, onCaptured }) {
         </button>
         <button className="primary-button" onClick={captureFrame} disabled={!ready}>
           <Camera />
-          촬영
+          사진 촬영
         </button>
       </div>
     </main>
@@ -605,14 +617,14 @@ function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onReset }) {
   return (
     <main className="screen">
       <AppHeader title="촬영 품질" onBack={onReset} />
-      <section className="score-hero">
-        <div>
-          <p>품질 점수</p>
+      <section className="quality-hero">
+        <GuideFrame imageUrl={imageUrl} mode="scan" />
+        <div className="quality-verdict">
+          <p>사진 품질</p>
           <strong>{analysis.qualityScore}</strong>
+          <span className={analysis.qualityScore >= 72 ? 'status-good' : 'status-warn'}>{gateLabel}</span>
         </div>
-        <span className={analysis.qualityScore >= 72 ? 'status-good' : 'status-warn'}>{gateLabel}</span>
       </section>
-      <GuideFrame imageUrl={imageUrl} mode="scan" />
       <section className="quality-grid">
         {analysis.quality.map((item) => (
           <div className={`quality-card-v2 ${item.pass ? 'pass' : 'warn'}`} key={item.id}>
@@ -627,7 +639,7 @@ function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onReset }) {
         <Info />
         <p>{passCount}/4개 조건이 통과되었습니다. 통과하지 못한 항목은 결과의 신뢰도를 자동으로 낮춥니다.</p>
       </section>
-      <div className="action-row">
+      <div className="action-row quality-actions">
         <label className="secondary-upload">
           <RotateCcw />
           다시 선택
@@ -663,34 +675,42 @@ function MetricBar({ metric, onSelect }) {
 
 function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
   const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
+  const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
   const recommendations = buildRecommendations(analysis);
   return (
     <main className="screen report">
       <AppHeader title="분석 리포트" onBack={onBack} />
-      <section className="report-summary">
+      <section className="report-hero">
         <div>
-          <p>종합 점수</p>
+          <p>종합 피부 컨디션</p>
           <strong>{analysis.overall}</strong>
-          <span>결과 신뢰도 {analysis.confidence}%</span>
+          <span>신뢰도 {analysis.confidence}% · {confidenceLabel(analysis.confidence)}</span>
         </div>
-        <div className="mini-stack">
-          <span>관리 우선</span>
+        <div className="verdict-copy">
+          <b>{analysis.overall >= 80 ? '전반적으로 안정적입니다.' : analysis.overall >= 65 ? '관리 우선순위를 정해야 합니다.' : '촬영 조건과 피부 신호를 다시 확인해야 합니다.'}</b>
+          <span>사진 품질과 항목별 신뢰도를 함께 반영한 참고 결과입니다.</span>
+        </div>
+      </section>
+      <section className="report-priority">
+        <div>
+          <span>우선 관리</span>
           {weakest.map((metric) => (
+            <b key={metric.id}>{metric.label}</b>
+          ))}
+        </div>
+        <div>
+          <span>상대적 안정</span>
+          {stable.map((metric) => (
             <b key={metric.id}>{metric.label}</b>
           ))}
         </div>
       </section>
       <GuideFrame imageUrl={imageUrl} mode="analysis" />
-      <section className="pipeline-card">
-        <h2>분석 파이프라인</h2>
-        <div className="pipeline">
-          {['품질 검사', '피부 ROI', '색·질감 특징', '기준 보정', '신뢰도 표시'].map((step) => (
-            <span key={step}>{step}</span>
-          ))}
-        </div>
-      </section>
       <section className="metric-list">
-        <h2>항목별 추정</h2>
+        <div className="section-title">
+          <h2>항목별 결과</h2>
+          <span>점수와 신뢰도를 함께 보세요</span>
+        </div>
         {analysis.metrics.map((metric) => (
           <MetricBar metric={metric} key={metric.id} onSelect={onSelect} />
         ))}

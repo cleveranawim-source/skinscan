@@ -924,3 +924,407 @@ button {
     box-shadow: 0 0 0 1px rgba(18, 26, 32, 0.06);
   }
 }
+
+/* Professional testing layout */
+.capture {
+  gap: 14px;
+  padding-bottom: 28px;
+}
+
+.capture-hero {
+  padding: 18px 0 2px;
+}
+
+.capture-hero p {
+  margin: 0;
+  color: #087be7;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.capture-hero h2 {
+  margin: 8px 0 10px;
+  max-width: 360px;
+  font-size: 31px;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.capture-hero span {
+  display: block;
+  color: #52606d;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.primary-entry {
+  position: sticky;
+  top: 86px;
+  z-index: 9;
+  padding: 10px 0;
+  background: rgba(248, 250, 251, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.primary-entry .primary-button {
+  min-height: 66px;
+  font-size: 18px;
+  box-shadow: 0 14px 28px rgba(8, 123, 231, 0.22);
+}
+
+.primary-entry .secondary-upload {
+  min-height: 66px;
+  background: #ffffff;
+  border: 1px solid #d6e0e8;
+}
+
+.capture-preview-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.capture-preview-panel .guide-frame {
+  min-height: 290px;
+}
+
+.capture-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.capture-checklist span {
+  min-height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  background: #ffffff;
+  border: 1px solid #dde6ec;
+  color: #2c3a46;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.capture-checklist svg {
+  width: 16px;
+  height: 16px;
+  color: #08a34d;
+  flex: 0 0 auto;
+}
+
+.trust-panel.compact {
+  grid-template-columns: 1fr;
+}
+
+.trust-panel.compact div {
+  padding: 13px;
+  border-color: #dde6ec;
+  box-shadow: none;
+}
+
+.feedback-button {
+  min-height: 52px;
+  border-radius: 8px;
+}
+
+.camera-screen {
+  background: #0f171e;
+  color: #fff;
+}
+
+.camera-screen .app-header {
+  background: rgba(15, 23, 30, 0.86);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.camera-screen .app-header h1,
+.camera-screen .icon-button {
+  color: #fff;
+}
+
+.camera-preview {
+  margin: 0;
+  min-height: calc(100vh - 224px);
+  border-radius: 0;
+  border: 0;
+}
+
+.camera-preview video {
+  min-height: calc(100vh - 224px);
+}
+
+.camera-topbar {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 18px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.camera-topbar span {
+  border-radius: 999px;
+  padding: 9px 13px;
+  background: rgba(10, 17, 24, 0.56);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  backdrop-filter: blur(12px);
+}
+
+.camera-hud {
+  top: auto;
+  bottom: 112px;
+}
+
+.camera-hud span {
+  min-height: 36px;
+  background: rgba(12, 22, 30, 0.62);
+  border-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+.shutter-button {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: 82px;
+  height: 82px;
+  border-radius: 999px;
+  border: 6px solid rgba(255, 255, 255, 0.72);
+  background: #fff;
+  color: #087be7;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+}
+
+.shutter-button svg {
+  width: 31px;
+  height: 31px;
+}
+
+.shutter-button:disabled {
+  opacity: 0.45;
+}
+
+.camera-status {
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.camera-status p {
+  color: #d9e4ec;
+}
+
+.camera-controls {
+  grid-template-columns: 0.72fr 1.28fr;
+}
+
+.camera-controls .secondary-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.quality-hero {
+  position: relative;
+  margin: 18px;
+}
+
+.quality-hero .guide-frame {
+  min-height: 390px;
+}
+
+.quality-verdict {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  border-radius: 8px;
+  padding: 15px;
+  background: rgba(12, 22, 30, 0.78);
+  color: #fff;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 8px 12px;
+  backdrop-filter: blur(14px);
+}
+
+.quality-verdict p {
+  margin: 0;
+  color: #b7c5d1;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.quality-verdict strong {
+  display: block;
+  font-size: 52px;
+  line-height: 0.9;
+}
+
+.quality-verdict .status-good,
+.quality-verdict .status-warn {
+  align-self: center;
+}
+
+.quality-actions {
+  grid-template-columns: 0.72fr 1.28fr;
+}
+
+.quality-actions .primary-button {
+  min-height: 62px;
+  font-size: 17px;
+}
+
+.report {
+  background: #f5f7f9;
+}
+
+.report-hero {
+  margin: 18px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #111b24;
+  color: #fff;
+}
+
+.report-hero p {
+  margin: 0;
+  color: #aebdcc;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.report-hero strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 64px;
+  line-height: 0.9;
+}
+
+.report-hero span {
+  display: block;
+  margin-top: 8px;
+  color: #d5e0e8;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.verdict-copy {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.verdict-copy b {
+  display: block;
+  font-size: 19px;
+  line-height: 1.32;
+}
+
+.report-priority {
+  margin: 0 18px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.report-priority div {
+  min-height: 116px;
+  border: 1px solid #dce5ec;
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+
+.report-priority span {
+  color: #647383;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.report-priority b {
+  color: #17222c;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.report > .guide-frame {
+  margin: 0 18px;
+  min-height: 430px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.section-title h2 {
+  margin: 0;
+}
+
+.section-title span {
+  color: #637180;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.metric-card {
+  box-shadow: 0 1px 0 rgba(18, 26, 32, 0.03);
+}
+
+.metric-card:active {
+  transform: translateY(1px);
+}
+
+.metric-head strong {
+  font-size: 34px;
+}
+
+.bar {
+  height: 9px;
+}
+
+.bar i {
+  background: linear-gradient(90deg, #0aa358, #087be7);
+}
+
+.recommend-card {
+  box-shadow: 0 1px 0 rgba(18, 26, 32, 0.03);
+}
+
+@media (max-width: 390px) {
+  .capture-hero h2 {
+    font-size: 28px;
+  }
+
+  .primary-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .capture-checklist,
+  .report-priority,
+  .quality-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .camera-preview,
+  .camera-preview video {
+    min-height: calc(100vh - 246px);
+  }
+}
