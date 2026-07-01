@@ -224,7 +224,8 @@ button {
 }
 
 .primary-button:disabled,
-.shutter-button:disabled {
+.shutter-button:disabled,
+.secondary-button:disabled {
   opacity: 0.42;
   cursor: not-allowed;
 }
@@ -479,6 +480,15 @@ button {
   width: min(74%, 330px);
   border-color: rgba(255, 255, 255, 0.88);
   box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.24);
+  transition: border-color 0.2s ease;
+}
+
+.camera-preview .oval-guide-good {
+  border-color: #7ee2bd;
+}
+
+.camera-preview .oval-guide-adjust {
+  border-color: #ffd276;
 }
 
 .camera-topbar {
@@ -1259,6 +1269,14 @@ button {
 
 .history-screen {
   padding-bottom: 28px;
+}
+
+.history-io {
+  grid-template-columns: 1fr 1fr;
+}
+
+.history-screen .inline-alert {
+  margin: 12px 18px 0;
 }
 
 .empty-history {

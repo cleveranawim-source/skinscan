@@ -17,14 +17,15 @@ Ask testers to try:
 1. Open the app.
 2. Read the first screen.
 3. Try `카메라 촬영` or `사진 선택`.
-4. Check the photo quality screen — this now includes face size/centering/tilt checks, not just exposure/glare/sharpness/resolution.
-5. Run analysis.
-6. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).
-7. Open a metric's detail screen and check whether the "판단 근거"(basis) makes sense.
-8. Open 분석 기록 (history icon, top right of the first screen) and confirm the score-only trend appears after at least two analyses.
-9. Copy the feedback template and send text feedback.
+4. In the camera preview, check whether the oval border turns green when the face is centered/close enough/level, and whether the on-screen hint (e.g. "조금 더 가까이 와주세요") matches what's actually wrong.
+5. Check the photo quality screen — this now includes face size/centering/tilt and color-signal checks, not just exposure/glare/sharpness/resolution.
+6. Run analysis.
+7. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).
+8. Open a metric's detail screen and check whether the "판단 근거"(basis) makes sense, and whether the score color (green/amber/red) matches how bad the number looks.
+9. Open 분석 기록 (history icon, top right of the first screen) and confirm the score-only trend appears after at least two analyses. Try "내보내기" to download a backup file, then "가져오기" with that same file to confirm it says "새로 추가할 항목이 없습니다" (no duplicates).
+10. Copy the feedback template and send text feedback.
 
-Also ask at least one tester to intentionally upload a non-face photo (a landscape, an object, a heavily cropped image) to confirm the app blocks analysis with a clear "얼굴을 찾지 못했습니다" message instead of producing a fake result.
+Also ask at least one tester to intentionally upload a non-face photo (a landscape, an object, a heavily cropped image) and a black-and-white/grayscale photo, to confirm the app blocks analysis with a clear message in both cases instead of producing a fake result.
 
 ## Questions To Ask
 
@@ -46,6 +47,7 @@ Also ask at least one tester to intentionally upload a non-face photo (a landsca
 - Current per-region scoring uses image heuristics grounded in CIELAB color values, not a validated dermatology AI model.
 - Recommendations are product candidates, not prescriptions.
 - Product ingredients and formulations can change.
+- The live camera alignment guide and burst capture (3-frame average) were verified with the underlying MediaPipe VIDEO-mode detection logic, but not on real camera hardware across different devices/browsers — please test on an actual phone before treating this as production-ready.
 
 ## Feedback Format
 

@@ -32,3 +32,5 @@ The app should not:
 ## Manual Review Needed Before Public Release
 
 Before wider release, product entries should be reviewed against current official ingredient lists and regional availability.
+
+The catalog currently lists 15 candidates across calming/barrier/hydration/brightening/sun categories (`src/lib/productCatalog.js`). Entries were chosen from long-running, widely available Korean skincare products to minimize the risk of recommending discontinued items, but none of them have been verified against current official ingredient lists, pricing, or stock status. Treat every entry as a draft candidate until someone checks it against the brand's official listing.

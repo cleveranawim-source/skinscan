@@ -8,7 +8,7 @@ import { DetailScreen } from './components/DetailScreen';
 import { HistoryScreen } from './components/HistoryScreen';
 import { analyzeImage } from './lib/analysis';
 import { readImage } from './lib/imageUtils';
-import { getHistory, saveScan, clearHistory } from './lib/history';
+import { getHistory, saveScan, clearHistory, importHistory } from './lib/history';
 
 export function App() {
   const [stage, setStage] = useState('empty');
@@ -63,6 +63,12 @@ export function App() {
     setHistory([]);
   }
 
+  function handleImportHistory(jsonText) {
+    const result = importHistory(jsonText);
+    setHistory(result.history);
+    return result;
+  }
+
   function resetToEmpty() {
     setImageUrl('');
     setAnalysis(null);
@@ -72,7 +78,14 @@ export function App() {
 
   let screen;
   if (stage === 'history') {
-    screen = <HistoryScreen history={history} onBack={() => setStage('empty')} onClear={handleClearHistory} />;
+    screen = (
+      <HistoryScreen
+        history={history}
+        onBack={() => setStage('empty')}
+        onClear={handleClearHistory}
+        onImport={handleImportHistory}
+      />
+    );
   } else if (stage === 'detail' && selectedMetric && analysis) {
     screen = <DetailScreen metric={selectedMetric} analysis={analysis} onBack={() => setStage('report')} />;
   } else if (stage === 'report' && analysis) {
