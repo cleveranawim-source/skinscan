@@ -1,4 +1,4 @@
-import { AlertTriangle, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { AlertTriangle, History, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { GuideFrame } from './GuideFrame';
 import { MetricBar } from './MetricBar';
@@ -6,6 +6,7 @@ import { FeedbackButton } from './FeedbackButton';
 import { confidenceLabel, scoreTone } from '../lib/analysis';
 import { buildRecommendations } from '../lib/recommendations';
 import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
+import { formatHistoryDate } from '../lib/history';
 
 const VERDICT_BY_TONE = {
   good: '전반적으로 안정적입니다.',
@@ -14,14 +15,30 @@ const VERDICT_BY_TONE = {
   warn: '촬영 조건과 피부 신호를 다시 확인해야 합니다.'
 };
 
-export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
+export function ReportScreen({ imageUrl, analysis, onBack, onSelect, onOpenHistory, historical }) {
   const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
   const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
-  const recommendations = buildRecommendations(analysis);
+  const recommendations = analysis.recommendations || buildRecommendations(analysis);
   const tone = scoreTone(analysis.overall);
   return (
     <main className="screen report-screen">
-      <AppHeader title="분석 리포트" onBack={onBack} />
+      <AppHeader
+        title="분석 리포트"
+        onBack={onBack}
+        rightAction={
+          onOpenHistory && (
+            <button className="icon-button" onClick={onOpenHistory} aria-label="분석 기록 보기">
+              <History />
+            </button>
+          )
+        }
+      />
+      {historical && (
+        <section className="inline-alert historical-banner">
+          <ShieldCheck />
+          <p>지난 기록입니다 · {formatHistoryDate(analysis.date)} · 사진은 저장되지 않아 표시되지 않습니다.</p>
+        </section>
+      )}
       <section className={`report-hero tone-${tone}`}>
         <div>
           <p>종합 피부 컨디션</p>
@@ -49,7 +66,7 @@ export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
           ))}
         </div>
       </section>
-      <GuideFrame imageUrl={imageUrl} mode="analysis" rois={analysis.rois} />
+      {imageUrl && <GuideFrame imageUrl={imageUrl} mode="analysis" rois={analysis.rois} />}
       <section className="metric-list">
         <div className="section-title">
           <h2>항목별 결과</h2>
@@ -106,7 +123,7 @@ export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
         <AlertTriangle />
         <p>화장품 추천은 진단이 아니라 성분/제형 후보입니다. 전성분 변경, 개인 알레르기, 기존 처방약과의 충돌 가능성은 구매 전 반드시 확인하세요.</p>
       </section>
-      <FeedbackButton analysis={analysis} />
+      {!historical && <FeedbackButton analysis={analysis} />}
     </main>
   );
 }

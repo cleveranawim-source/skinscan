@@ -1,19 +1,10 @@
 import { useState } from 'react';
-import { Download, Info, Trash2, Upload } from 'lucide-react';
+import { ChevronRight, Download, Info, Trash2, Upload } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { TrendChart } from './TrendChart';
-import { serializeHistory, trendFor } from '../lib/history';
+import { formatHistoryDate, hasFullReport, serializeHistory, trendFor } from '../lib/history';
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleString('ko-KR', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
-export function HistoryScreen({ history, onBack, onClear, onImport }) {
+export function HistoryScreen({ history, onBack, onClear, onImport, onOpenEntry }) {
   const overallTrend = trendFor(history, 'overall');
   const [importMessage, setImportMessage] = useState('');
 
@@ -85,19 +76,27 @@ export function HistoryScreen({ history, onBack, onClear, onImport }) {
             {history.map((entry, index) => {
               const prev = history[index + 1];
               const delta = prev ? entry.overall - prev.overall : null;
+              const clickable = hasFullReport(entry);
+              const Tag = clickable ? 'button' : 'article';
               return (
-                <article className="history-card" key={entry.id}>
+                <Tag
+                  className="history-card"
+                  key={entry.id}
+                  onClick={clickable ? () => onOpenEntry(entry) : undefined}
+                >
                   <div className="history-score">
                     <strong>{entry.overall}</strong>
-                    <span>{formatDate(entry.date)}</span>
+                    <span>{formatHistoryDate(entry.date)}</span>
+                    {!clickable && <small className="history-legacy">요약만 저장됨</small>}
                   </div>
                   <div className="history-meta">
                     <span>신뢰도 {entry.confidence}%</span>
                     {delta !== null && (
                       <span className={delta >= 0 ? 'delta-up' : 'delta-down'}>{delta > 0 ? `+${delta}` : delta}</span>
                     )}
+                    {clickable && <ChevronRight />}
                   </div>
-                </article>
+                </Tag>
               );
             })}
           </section>

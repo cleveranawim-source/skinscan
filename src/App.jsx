@@ -16,6 +16,8 @@ export function App() {
   const [analysis, setAnalysis] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState(null);
   const [history, setHistory] = useState(() => getHistory());
+  const [historyEntry, setHistoryEntry] = useState(null);
+  const [historyMetric, setHistoryMetric] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   // 화면(stage)이 바뀔 때마다 스크롤을 맨 위로 되돌립니다.
@@ -69,6 +71,12 @@ export function App() {
     return result;
   }
 
+  function openHistoryEntry(entry) {
+    setHistoryEntry(entry);
+    setHistoryMetric(null);
+    setStage('historyReport');
+  }
+
   function resetToEmpty() {
     setImageUrl('');
     setAnalysis(null);
@@ -84,6 +92,25 @@ export function App() {
         onBack={() => setStage('empty')}
         onClear={handleClearHistory}
         onImport={handleImportHistory}
+        onOpenEntry={openHistoryEntry}
+      />
+    );
+  } else if (stage === 'historyDetail' && historyMetric && historyEntry) {
+    screen = <DetailScreen metric={historyMetric} analysis={historyEntry} onBack={() => setStage('historyReport')} />;
+  } else if (stage === 'historyReport' && historyEntry) {
+    screen = (
+      <ReportScreen
+        imageUrl=""
+        analysis={historyEntry}
+        historical
+        onBack={() => {
+          setHistoryEntry(null);
+          setStage('history');
+        }}
+        onSelect={(metric) => {
+          setHistoryMetric(metric);
+          setStage('historyDetail');
+        }}
       />
     );
   } else if (stage === 'detail' && selectedMetric && analysis) {
@@ -94,6 +121,7 @@ export function App() {
         imageUrl={imageUrl}
         analysis={analysis}
         onBack={() => setStage('quality')}
+        onOpenHistory={() => setStage('history')}
         onSelect={(metric) => {
           setSelectedMetric(metric);
           setStage('detail');
