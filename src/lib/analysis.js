@@ -397,8 +397,13 @@ export async function analyzeImage(image) {
   );
 
   const qualityScore = Math.round(weightedQualityScore(quality));
-  const confidencePenalty = quality.filter((item) => !item.pass).length * 6;
-  const baseConfidence = clamp(qualityScore - confidencePenalty, 42, 96);
+  // 신뢰도는 "가장 약한 항목만큼만 믿을 수 있다"는 원칙으로 계산합니다. 8개 항목 평균만
+  // 쓰면 흔들림처럼 심각한 문제가 하나 있어도 가중치가 낮아(14%) 평균이 크게 안 떨어지고,
+  // 실패 개수당 고정 감점(-6)만으로는 "얼마나" 나쁜지가 반영되지 않았습니다. 그래서 가장
+  // 낮은 항목 점수에 더 큰 비중을 둬서, 하드블록 문턱 바로 아래의 애매한 사진도 신뢰도가
+  // 낮게 표시되도록 합니다.
+  const worstQualityScore = Math.min(...quality.map((item) => item.score));
+  const baseConfidence = clamp(worstQualityScore * 0.65 + qualityScore * 0.35, 42, 96);
   const colorInsufficient = ambient.avgSat < MIN_COLOR_SATURATION;
   const criticalFailures = quality.filter((item) => item.score < CRITICAL_QUALITY_FLOOR).map((item) => item.label);
 
