@@ -43,6 +43,9 @@ const MIN_ANALYZABLE_QUALITY = 55;
 // 흑백이거나 색 정보가 거의 없는 사진은 가중 평균 점수가 우연히 통과선을 넘더라도
 // 홍조/톤처럼 색에 기반한 지표를 계산할 수 없으므로 별도로 막습니다.
 const MIN_COLOR_SATURATION = 0.02;
+// 가중 평균만 쓰면 항목 하나가 심각해도(예: 손떨림) 다른 항목이 좋으면 희석되어 통과될
+// 수 있습니다. 항목 하나라도 이 점수 밑이면, 전체 평균과 무관하게 분석을 막습니다.
+const CRITICAL_QUALITY_FLOOR = 35;
 
 function weightedQualityScore(quality) {
   let total = 0;
@@ -102,22 +105,30 @@ function sampleRegion(data, width, height, roi) {
 
   const n = Math.max(samples.length, 1);
   const meanLum = lumSum / n;
+  const meanA = aSum / n;
   let lumSq = 0;
+  let aSq = 0;
   samples.forEach((sample) => {
     lumSq += (sample.lum - meanLum) ** 2;
+    aSq += (sample.a - meanA) ** 2;
   });
   const lumStd = Math.sqrt(lumSq / n);
+  const aStd = Math.sqrt(aSq / n);
   const darkCount = samples.filter((sample) => sample.lum < meanLum - lumStd * 1.1).length;
+  // 그 부위 자체의 평균 a*보다 두드러지게 붉은 작은 영역 = 국소 트러블(붉은 돌기) 후보.
+  // "홍조"(부위 전체 평균)와 다르게, 부위 안에서 튀는 지점만 잡아냅니다.
+  const redBumpCount = samples.filter((sample) => sample.a > meanA + aStd * 1.15).length;
 
   return {
     n,
     meanLum,
     meanL: lSum / n,
-    meanA: aSum / n,
+    meanA,
     meanB: bSum / n,
     meanEdge: edgeSum / n,
     glareRatio: (glare / n) * 100,
     darkRatio: (darkCount / n) * 100,
+    redBumpRatio: (redBumpCount / n) * 100,
     lumStd
   };
 }
@@ -231,6 +242,14 @@ function toneSpreadValue(roiStats) {
   return Math.sqrt(means.reduce((sum, value) => sum + (value - avg) ** 2, 0) / means.length);
 }
 
+const BLEMISH_REGION_LABELS = {
+  forehead: '이마',
+  leftCheek: '왼쪽 볼',
+  rightCheek: '오른쪽 볼',
+  nose: '코',
+  chin: '턱'
+};
+
 function buildMetrics(roiStats, ambient, baseConfidence) {
   const { forehead, leftCheek, rightCheek, nose, leftUnderEye, rightUnderEye, chin, mouthCorners } = roiStats;
 
@@ -244,13 +263,21 @@ function buildMetrics(roiStats, ambient, baseConfidence) {
   const shineGlare = (forehead.glareRatio + nose.glareRatio) / 2;
   const wrinkleEdge = (leftUnderEye.meanEdge + rightUnderEye.meanEdge + forehead.meanEdge + mouthCorners.meanEdge) / 4;
 
+  // 여드름·트러블 후보: "홍조"(부위 전체 평균)와 달리, 각 부위 안에서 그 부위 평균보다
+  // 두드러지게 붉은 국소 지점의 비율을 부위별로 보고 어디에 몰려있는지 찾습니다.
+  const blemishRegions = { forehead, leftCheek, rightCheek, nose, chin };
+  const blemishEntries = Object.entries(blemishRegions).map(([name, stats]) => [name, stats.redBumpRatio]);
+  const avgBlemish = blemishEntries.reduce((sum, [, ratio]) => sum + ratio, 0) / blemishEntries.length;
+  const topBlemishRegion = [...blemishEntries].sort((a, b) => b[1] - a[1])[0];
+
   const scores = {
     redness: clamp(96 - Math.max(0, rednessRel) * 7, 15, 98),
     tone: clamp(98 - toneSpread * 2.2 - ambient.glareRatio * 1.0, 18, 98),
     spots: clamp(94 - spotsDark * 2.7 - ambient.lumStd * 0.2, 18, 97),
     texture: clamp(96 - textureEdge * 2.6 - ambient.lumStd * 0.16, 16, 98),
     shine: clamp(96 - shineGlare * 5.2, 12, 98),
-    wrinkle: clamp(92 - wrinkleEdge * 1.7 - ambient.lumStd * 0.12, 20, 95)
+    wrinkle: clamp(92 - wrinkleEdge * 1.7 - ambient.lumStd * 0.12, 20, 95),
+    blemish: clamp(93 - avgBlemish * 3.4, 15, 96)
   };
 
   const raw = {
@@ -259,10 +286,11 @@ function buildMetrics(roiStats, ambient, baseConfidence) {
     spots: `부위 내 어두운 후보 ${round(spotsDark, 1)}%`,
     texture: `고주파 변화 ${round(textureEdge, 1)}`,
     shine: `T존 하이라이트 ${round(shineGlare, 1)}%`,
-    wrinkle: `눈가·이마·입가 선형 후보 밀도 ${round(wrinkleEdge, 1)}`
+    wrinkle: `눈가·이마·입가 선형 후보 밀도 ${round(wrinkleEdge, 1)}`,
+    blemish: `평균 ${round(avgBlemish, 1)}%, ${BLEMISH_REGION_LABELS[topBlemishRegion[0]]}에 집중 (${round(topBlemishRegion[1], 1)}%)`
   };
 
-  const confidenceOffsets = { redness: 0, tone: 0, spots: -4, texture: -6, shine: -8, wrinkle: -18 };
+  const confidenceOffsets = { redness: 0, tone: 0, spots: -4, texture: -6, shine: -8, wrinkle: -18, blemish: -20 };
 
   return metricDefinitions.map((metric) => {
     const score = scores[metric.id];
@@ -369,6 +397,7 @@ export async function analyzeImage(image) {
   const confidencePenalty = quality.filter((item) => !item.pass).length * 6;
   const baseConfidence = clamp(qualityScore - confidencePenalty, 42, 96);
   const colorInsufficient = ambient.avgSat < MIN_COLOR_SATURATION;
+  const criticalFailures = quality.filter((item) => item.score < CRITICAL_QUALITY_FLOOR).map((item) => item.label);
 
   const metrics = buildMetrics(roiStats, ambient, baseConfidence);
   const overall = Math.round(metrics.reduce((sum, metric) => sum + metric.score, 0) / metrics.length);
@@ -377,7 +406,8 @@ export async function analyzeImage(image) {
     faceDetected: true,
     faceMeshError,
     colorInsufficient,
-    analysisBlocked: qualityScore < MIN_ANALYZABLE_QUALITY || colorInsufficient,
+    criticalFailures,
+    analysisBlocked: qualityScore < MIN_ANALYZABLE_QUALITY || colorInsufficient || criticalFailures.length > 0,
     imageMeta: { width: image.width, height: image.height, sampleCount: roiStats.forehead.n },
     raw: {
       avgLum: round(ambient.meanLum, 1),
@@ -386,7 +416,11 @@ export async function analyzeImage(image) {
       glareRatio: round(ambient.glareRatio, 2),
       redRatio: round((roiStats.leftCheek.meanA + roiStats.rightCheek.meanA) / 2, 2),
       darkRatio: round((roiStats.forehead.darkRatio + roiStats.leftCheek.darkRatio + roiStats.rightCheek.darkRatio) / 3, 2),
-      toneSpread: round(toneSpreadValue(roiStats), 2)
+      toneSpread: round(toneSpreadValue(roiStats), 2),
+      blemishRatio: round(
+        (roiStats.forehead.redBumpRatio + roiStats.leftCheek.redBumpRatio + roiStats.rightCheek.redBumpRatio + roiStats.nose.redBumpRatio + roiStats.chin.redBumpRatio) / 5,
+        2
+      )
     },
     quality,
     qualityScore,

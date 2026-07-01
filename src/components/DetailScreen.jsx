@@ -49,6 +49,7 @@ export function DetailScreen({ metric, analysis, onBack }) {
           <span>대비 {analysis.raw.contrast}</span>
           <span>반사 {analysis.raw.glareRatio}%</span>
           <span>붉은기 a* {analysis.raw.redRatio}</span>
+          <span>국소 트러블 신호 {analysis.raw.blemishRatio}%</span>
         </div>
       </section>
     </main>

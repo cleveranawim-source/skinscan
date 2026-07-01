@@ -37,11 +37,19 @@ export function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetak
         <section className="face-alert">
           <AlertTriangle />
           <div>
-            <strong>{analysis.colorInsufficient ? '색 정보가 거의 없는 사진입니다.' : '사진 품질이 낮아 분석할 수 없습니다.'}</strong>
+            <strong>
+              {analysis.colorInsufficient
+                ? '색 정보가 거의 없는 사진입니다.'
+                : analysis.criticalFailures?.length > 0
+                  ? `${analysis.criticalFailures.join(', ')} 상태가 심각합니다.`
+                  : '사진 품질이 낮아 분석할 수 없습니다.'}
+            </strong>
             <p>
               {analysis.colorInsufficient
                 ? '흑백이거나 채도가 매우 낮으면 홍조·톤처럼 색을 기준으로 하는 지표를 계산할 수 없습니다. 필터 없는 컬러 사진으로 다시 시도해주세요.'
-                : '통과하지 못한 항목이 많아 결과를 신뢰하기 어렵습니다. 아래 항목을 참고해 다시 촬영해주세요.'}
+                : analysis.criticalFailures?.length > 0
+                  ? '이 항목 하나만 심각하게 나빠도, 다른 조건이 좋아도 결과를 믿을 수 없어 분석을 막습니다. 아래 항목을 참고해 다시 촬영해주세요.'
+                  : '통과하지 못한 항목이 많아 결과를 신뢰하기 어렵습니다. 아래 항목을 참고해 다시 촬영해주세요.'}
             </p>
           </div>
         </section>

@@ -15,6 +15,8 @@ export function buildRecommendations(analysis) {
     .filter((product) => product.matchCount > 0)
     .sort((a, b) => b.matchCount - a.matchCount || a.name.localeCompare(b.name, 'ko'))
     .slice(0, 4);
+  const blemishMetric = analysis.metrics.find((metric) => metric.id === 'blemish');
+
   return {
     focus: weakMetrics.slice(0, 3),
     products: ranked,
@@ -27,7 +29,10 @@ export function buildRecommendations(analysis) {
         : '강한 스크럽은 피하세요.',
       analysis.raw.contrast > 38
         ? '필링 패드를 매일 쓰지 마세요.'
-        : '향이 강한 제품은 피하세요.'
+        : '향이 강한 제품은 피하세요.',
+      blemishMetric && blemishMetric.score < 55
+        ? '국소 트러블 신호가 있는 부위는 손으로 만지거나 물리적으로 각질을 제거하지 마세요.'
+        : '자기 전 두꺼운 옥클루시브 크림을 겹겹이 바르지 마세요.'
     ]
   };
 }
