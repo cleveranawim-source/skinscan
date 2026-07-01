@@ -24,7 +24,7 @@ export function EmptyScreen({ onUpload, onOpenCamera, onOpenHistory, errorMessag
       <section className="capture-hero">
         <div>
           <p>PHOTO-BASED SKIN CHECK</p>
-          <h2>오늘 내 피부, 사진 한 장으로 점검해요.</h2>
+          <h2>오늘 피부, 사진 한 장으로 확인</h2>
           <span>이마·볼·코·눈가·턱을 얼굴 인식으로 찾아 부위별로 점수를 매깁니다. 조명이나 선명도가 부족하면 신뢰도를 낮춰 보여드려요.</span>
         </div>
       </section>
@@ -43,7 +43,7 @@ export function EmptyScreen({ onUpload, onOpenCamera, onOpenHistory, errorMessag
       <section className="metric-preview-section">
         <div className="section-title">
           <h2>이런 걸 확인해요</h2>
-          <span>6개 항목 · 신뢰도 함께 표시</span>
+          <span>{metricDefinitions.length}개 항목 · 신뢰도 함께 표시</span>
         </div>
         <div className="focus-row">
           {metricDefinitions.map((metric) => (

@@ -1256,7 +1256,8 @@ button {
 
 @media (max-width: 390px) {
   .capture-hero h2 {
-    font-size: 29px;
+    font-size: 26px;
+    white-space: nowrap;
   }
 
   .capture-actions {
