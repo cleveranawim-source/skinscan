@@ -28,14 +28,21 @@ export function confidenceLabel(confidence) {
 }
 
 const QUALITY_WEIGHTS = {
-  exposure: 0.2,
-  glare: 0.18,
-  sharpness: 0.16,
-  resolution: 0.1,
-  faceSize: 0.14,
-  faceCenter: 0.12,
-  faceRoll: 0.1
+  exposure: 0.18,
+  glare: 0.16,
+  sharpness: 0.14,
+  resolution: 0.09,
+  color: 0.12,
+  faceSize: 0.12,
+  faceCenter: 0.11,
+  faceRoll: 0.08
 };
+
+// 재촬영 권장(55점 미만) 구간은 라벨만 보여주지 않고 실제로 분석 버튼을 막습니다.
+const MIN_ANALYZABLE_QUALITY = 55;
+// 흑백이거나 색 정보가 거의 없는 사진은 가중 평균 점수가 우연히 통과선을 넘더라도
+// 홍조/톤처럼 색에 기반한 지표를 계산할 수 없으므로 별도로 막습니다.
+const MIN_COLOR_SATURATION = 0.02;
 
 function weightedQualityScore(quality) {
   let total = 0;
@@ -121,7 +128,10 @@ function sampleRect(data, width, height, rect) {
   let lumSum = 0;
   let lumSq = 0;
   let edgeSum = 0;
+  let satSum = 0;
   let glare = 0;
+  let darkClip = 0;
+  let brightClip = 0;
   let n = 0;
 
   for (let y = rect.minY; y <= rect.maxY; y += step) {
@@ -141,7 +151,10 @@ function sampleRect(data, width, height, rect) {
       lumSum += lum;
       lumSq += lum * lum;
       edgeSum += Math.abs(lum - lumRight) + Math.abs(lum - lumDown);
+      satSum += sat;
       if (lum > 225 && sat < 0.22) glare += 1;
+      if (lum < 12) darkClip += 1;
+      if (lum > 248) brightClip += 1;
       n += 1;
     }
   }
@@ -149,21 +162,32 @@ function sampleRect(data, width, height, rect) {
   const count = Math.max(n, 1);
   const meanLum = lumSum / count;
   const lumStd = Math.sqrt(Math.max(0, lumSq / count - meanLum * meanLum));
-  return { meanLum, lumStd, meanEdge: edgeSum / count, glareRatio: (glare / count) * 100 };
+  return {
+    meanLum,
+    lumStd,
+    meanEdge: edgeSum / count,
+    glareRatio: (glare / count) * 100,
+    avgSat: satSum / count,
+    darkClipRatio: (darkClip / count) * 100,
+    brightClipRatio: (brightClip / count) * 100
+  };
 }
 
 function buildAmbientQuality(ambient, resolutionScore, image) {
-  const exposureScore = clamp(100 - Math.abs(ambient.meanLum - 145) * 0.85, 0, 100);
+  // 절대 밝기(예: 145) 하나를 "정답"으로 두면 피부가 어두운 사람은 조명이 좋아도
+  // 평균 밝기가 낮게 나와 불리하게 판정됩니다. 그래서 절대 밝기 대신, 암부/명부가
+  // 뭉개져 디테일이 사라졌는지(클리핑)만 봅니다 — 피부톤과 무관한 신호입니다.
+  const exposureScore = clamp(100 - ambient.darkClipRatio * 1.8 - ambient.brightClipRatio * 2.5, 0, 100);
   const glareScore = clamp(100 - ambient.glareRatio * 7, 0, 100);
   const sharpnessScore = clamp(ambient.meanEdge * 7.5, 0, 100);
   return [
     {
       id: 'exposure',
       label: '노출',
-      value: ambient.meanLum < 85 ? '어두움' : ambient.meanLum > 195 ? '과노출' : '적정',
+      value: ambient.darkClipRatio > 20 ? '어두움' : ambient.brightClipRatio > 10 ? '과노출' : '적정',
       score: round(exposureScore),
       pass: exposureScore >= 68,
-      detail: `평균 밝기 ${round(ambient.meanLum)}`
+      detail: `암부 손실 ${round(ambient.darkClipRatio, 1)}% · 명부 손실 ${round(ambient.brightClipRatio, 1)}%`
     },
     {
       id: 'glare',
@@ -188,6 +212,14 @@ function buildAmbientQuality(ambient, resolutionScore, image) {
       score: round(resolutionScore),
       pass: resolutionScore >= 65,
       detail: `${image.width} x ${image.height}`
+    },
+    {
+      id: 'color',
+      label: '색상 정보',
+      value: ambient.avgSat < MIN_COLOR_SATURATION ? '흑백/저채도' : ambient.avgSat < 0.035 ? '채도 낮음' : '정상',
+      score: round(clamp((ambient.avgSat / 0.05) * 100, 0, 100)),
+      pass: ambient.avgSat >= 0.035,
+      detail: `평균 채도 ${round(ambient.avgSat * 100, 1)}%`
     }
   ];
 }
@@ -273,6 +305,8 @@ export async function analyzeImage(image) {
     return {
       faceDetected: false,
       faceMeshError,
+      colorInsufficient: ambient.avgSat < MIN_COLOR_SATURATION,
+      analysisBlocked: true,
       imageMeta: { width: image.width, height: image.height },
       quality,
       qualityScore: Math.round(weightedQualityScore(quality)),
@@ -334,6 +368,7 @@ export async function analyzeImage(image) {
   const qualityScore = Math.round(weightedQualityScore(quality));
   const confidencePenalty = quality.filter((item) => !item.pass).length * 6;
   const baseConfidence = clamp(qualityScore - confidencePenalty, 42, 96);
+  const colorInsufficient = ambient.avgSat < MIN_COLOR_SATURATION;
 
   const metrics = buildMetrics(roiStats, ambient, baseConfidence);
   const overall = Math.round(metrics.reduce((sum, metric) => sum + metric.score, 0) / metrics.length);
@@ -341,6 +376,8 @@ export async function analyzeImage(image) {
   return {
     faceDetected: true,
     faceMeshError,
+    colorInsufficient,
+    analysisBlocked: qualityScore < MIN_ANALYZABLE_QUALITY || colorInsufficient,
     imageMeta: { width: image.width, height: image.height, sampleCount: roiStats.forehead.n },
     raw: {
       avgLum: round(ambient.meanLum, 1),

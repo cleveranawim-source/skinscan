@@ -1,6 +1,5 @@
 import { AlertTriangle, Camera, CheckCircle2, History, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
 import { AppHeader } from './AppHeader';
-import { GuideFrame } from './GuideFrame';
 import { FeedbackButton } from './FeedbackButton';
 import { protocolSteps } from '../lib/constants';
 import { metricDefinitions } from '../lib/metricDefinitions';
@@ -58,7 +57,6 @@ export function EmptyScreen({ onUpload, onOpenCamera, onOpenHistory, errorMessag
           <h2>촬영 가이드</h2>
           <span>정확도를 높이는 팁</span>
         </div>
-        <GuideFrame mode="guide" />
         <div className="protocol-inline">
           {protocolSteps.map((step) => (
             <span key={step}>

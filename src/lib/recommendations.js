@@ -19,9 +19,15 @@ export function buildRecommendations(analysis) {
     focus: weakMetrics.slice(0, 3),
     products: ranked,
     avoid: [
-      analysis.raw.glareRatio > 7 ? '강한 오일막/광택 제형' : '새 제품을 여러 개 동시에 시작하기',
-      analysis.raw.redRatio > 5 ? '고농도 산/레티노이드의 즉시 도입' : '강한 스크럽',
-      analysis.raw.contrast > 38 ? '필링 패드 매일 사용' : '향이 강한 제품'
+      analysis.raw.glareRatio > 7
+        ? '오일막이 강하게 남는 광택 제형은 피하세요.'
+        : '새 제품을 여러 개 동시에 시작하지 마세요.',
+      analysis.raw.redRatio > 5
+        ? '고농도 산이나 레티노이드를 바로 도입하지 마세요.'
+        : '강한 스크럽은 피하세요.',
+      analysis.raw.contrast > 38
+        ? '필링 패드를 매일 쓰지 마세요.'
+        : '향이 강한 제품은 피하세요.'
     ]
   };
 }

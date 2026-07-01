@@ -5,13 +5,7 @@ import { GuideFrame } from './GuideFrame';
 export function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetake, onReset }) {
   const passCount = analysis.quality.filter((item) => item.pass).length;
   const totalCount = analysis.quality.length;
-  const gateLabel = !analysis.faceDetected
-    ? '분석 불가'
-    : analysis.qualityScore >= 72
-      ? '분석 가능'
-      : analysis.qualityScore >= 55
-        ? '제한적 분석'
-        : '재촬영 권장';
+  const gateLabel = analysis.analysisBlocked ? '분석 불가' : analysis.qualityScore >= 72 ? '분석 가능' : '제한적 분석';
 
   return (
     <main className="screen quality-screen">
@@ -21,7 +15,7 @@ export function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetak
         <div className="quality-verdict">
           <p>사진 품질</p>
           <strong>{analysis.qualityScore}</strong>
-          <span className={analysis.faceDetected && analysis.qualityScore >= 72 ? 'status-good' : 'status-warn'}>{gateLabel}</span>
+          <span className={!analysis.analysisBlocked && analysis.qualityScore >= 72 ? 'status-good' : 'status-warn'}>{gateLabel}</span>
         </div>
       </section>
 
@@ -34,6 +28,20 @@ export function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetak
               {analysis.faceMeshError
                 ? '브라우저를 최신 버전으로 업데이트하거나 다른 기기/브라우저로 다시 시도해주세요.'
                 : '정면으로, 얼굴이 프레임 중앙에 크게 나오도록 다시 촬영하거나 다른 사진을 선택해주세요.'}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {analysis.faceDetected && analysis.analysisBlocked && (
+        <section className="face-alert">
+          <AlertTriangle />
+          <div>
+            <strong>{analysis.colorInsufficient ? '색 정보가 거의 없는 사진입니다.' : '사진 품질이 낮아 분석할 수 없습니다.'}</strong>
+            <p>
+              {analysis.colorInsufficient
+                ? '흑백이거나 채도가 매우 낮으면 홍조·톤처럼 색을 기준으로 하는 지표를 계산할 수 없습니다. 필터 없는 컬러 사진으로 다시 시도해주세요.'
+                : '통과하지 못한 항목이 많아 결과를 신뢰하기 어렵습니다. 아래 항목을 참고해 다시 촬영해주세요.'}
             </p>
           </div>
         </section>
@@ -60,7 +68,7 @@ export function QualityScreen({ imageUrl, analysis, onUpload, onAnalyze, onRetak
           <RotateCcw />
           다시 촬영
         </button>
-        <button className="primary-button" onClick={onAnalyze} disabled={!analysis.faceDetected}>
+        <button className="primary-button" onClick={onAnalyze} disabled={analysis.analysisBlocked}>
           <ScanLine />
           분석 실행
         </button>
