@@ -1,0 +1,109 @@
+import { AlertTriangle, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { AppHeader } from './AppHeader';
+import { GuideFrame } from './GuideFrame';
+import { MetricBar } from './MetricBar';
+import { FeedbackButton } from './FeedbackButton';
+import { confidenceLabel } from '../lib/analysis';
+import { buildRecommendations } from '../lib/recommendations';
+import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
+
+export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
+  const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
+  const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
+  const recommendations = buildRecommendations(analysis);
+  return (
+    <main className="screen report-screen">
+      <AppHeader title="분석 리포트" onBack={onBack} />
+      <section className="report-hero">
+        <div>
+          <p>종합 피부 컨디션</p>
+          <strong>{analysis.overall}</strong>
+          <span>
+            신뢰도 {analysis.confidence}% · {confidenceLabel(analysis.confidence)}
+          </span>
+        </div>
+        <div className="verdict-copy">
+          <b>
+            {analysis.overall >= 80
+              ? '전반적으로 안정적입니다.'
+              : analysis.overall >= 65
+                ? '관리 우선순위를 정해야 합니다.'
+                : '촬영 조건과 피부 신호를 다시 확인해야 합니다.'}
+          </b>
+          <span>사진 품질과 항목별 신뢰도를 함께 반영한 참고 결과입니다.</span>
+        </div>
+      </section>
+      <section className="report-priority">
+        <div>
+          <span>우선 관리</span>
+          {weakest.map((metric) => (
+            <b key={metric.id}>{metric.label}</b>
+          ))}
+        </div>
+        <div>
+          <span>상대적 안정</span>
+          {stable.map((metric) => (
+            <b key={metric.id}>{metric.label}</b>
+          ))}
+        </div>
+      </section>
+      <GuideFrame imageUrl={imageUrl} mode="analysis" rois={analysis.rois} />
+      <section className="metric-list">
+        <div className="section-title">
+          <h2>항목별 결과</h2>
+          <span>점수와 신뢰도를 함께 보세요</span>
+        </div>
+        {analysis.metrics.map((metric) => (
+          <MetricBar metric={metric} key={metric.id} onSelect={onSelect} />
+        ))}
+      </section>
+      <section className="recommend-card">
+        <div className="recommend-title">
+          <SlidersHorizontal />
+          <div>
+            <h2>한국 화장품 추천</h2>
+            <p>점수가 낮은 항목과 제형 리스크를 기준으로 고른 후보입니다.</p>
+          </div>
+        </div>
+        <div className="catalog-meta">
+          <ShieldCheck />
+          <span>
+            성분 후보 정보 갱신일 {catalogUpdatedAt} · {catalogReviewStatus}
+          </span>
+        </div>
+        <div className="focus-row">
+          {recommendations.focus.map((metric) => (
+            <span key={metric.id}>
+              {metric.label} {metric.score}
+            </span>
+          ))}
+        </div>
+        <div className="product-list">
+          {recommendations.products.map((product) => (
+            <article className="product-card" key={product.id}>
+              <div>
+                <span>{product.category}</span>
+                <h3>{product.name}</h3>
+              </div>
+              <strong>{product.strength}</strong>
+              <p>{product.reason}</p>
+              <small>맞는 신호: {product.matchedLabels.join(', ')}</small>
+              <em>{product.caution}</em>
+            </article>
+          ))}
+        </div>
+        <div className="avoid-box">
+          <strong>이번 결과에서 피할 것</strong>
+          {recommendations.avoid.map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </section>
+      <section className="limitation-card">
+        <AlertTriangle />
+        <p>화장품 추천은 진단이 아니라 성분/제형 후보입니다. 전성분 변경, 개인 알레르기, 기존 처방약과의 충돌 가능성은 구매 전 반드시 확인하세요.</p>
+      </section>
+      <FeedbackButton analysis={analysis} />
+    </main>
+  );
+}
