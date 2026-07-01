@@ -83,10 +83,11 @@ export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
         <div className="product-list">
           {recommendations.products.map((product) => (
             <article className="product-card" key={product.id}>
-              <div>
+              <div className="product-card-head">
                 <span>{product.category}</span>
-                <h3>{product.name}</h3>
+                {product.tier === 'A' && <span className="award-badge">2025 올리브영 어워즈</span>}
               </div>
+              <h3>{product.name}</h3>
               <strong>{product.strength}</strong>
               <p>{product.reason}</p>
               <small>맞는 신호: {product.matchedLabels.join(', ')}</small>
