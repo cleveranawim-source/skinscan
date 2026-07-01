@@ -1254,12 +1254,17 @@ button {
   font-weight: 780;
 }
 
-@media (max-width: 390px) {
+/* .screen 자체가 min(480px, 100vw)라서, 이 폭 안에서는 어떤 실제 기기 너비든
+   같은 히어로 헤드라인이 한 줄로 나와야 합니다. 390px 같은 좁은 값만 기준으로
+   하면 iPhone 표준 모델(390~430px대)이 빠져서 두 줄로 깨졌었습니다. */
+@media (max-width: 480px) {
   .capture-hero h2 {
     font-size: 26px;
     white-space: nowrap;
   }
+}
 
+@media (max-width: 390px) {
   .capture-actions {
     grid-template-columns: 1fr;
   }

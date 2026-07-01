@@ -190,7 +190,10 @@ function buildAmbientQuality(ambient, resolutionScore, image) {
   // 뭉개져 디테일이 사라졌는지(클리핑)만 봅니다 — 피부톤과 무관한 신호입니다.
   const exposureScore = clamp(100 - ambient.darkClipRatio * 1.8 - ambient.brightClipRatio * 2.5, 0, 100);
   const glareScore = clamp(100 - ambient.glareRatio * 7, 0, 100);
-  const sharpnessScore = clamp(ambient.meanEdge * 7.5, 0, 100);
+  // 실제 손떨림 정도의 블러(1~5px 가우시안 기준)로 보정한 값입니다. 예전 공식(edge*7.5)은
+  // 극단적으로 흔들린 사진(blur 10px+)만 잡아내고, 눈에 띄게 흐린데도 흔한 손떨림
+  // 수준(blur 2~5px)은 45점을 넘겨 통과시켰습니다.
+  const sharpnessScore = clamp((ambient.meanEdge - 5) * 11, 0, 100);
   return [
     {
       id: 'exposure',
