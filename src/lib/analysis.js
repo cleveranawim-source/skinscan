@@ -13,6 +13,14 @@ export function scoreLabel(score) {
   return '주의';
 }
 
+// 점수 등급에 맞춰 UI 색상을 통일하기 위한 톤. scoreLabel과 같은 경계값을 씁니다.
+export function scoreTone(score) {
+  if (score >= 85) return 'good';
+  if (score >= 70) return 'ok';
+  if (score >= 55) return 'watch';
+  return 'warn';
+}
+
 export function confidenceLabel(confidence) {
   if (confidence >= 82) return '높음';
   if (confidence >= 66) return '중간';

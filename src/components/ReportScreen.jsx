@@ -3,18 +3,26 @@ import { AppHeader } from './AppHeader';
 import { GuideFrame } from './GuideFrame';
 import { MetricBar } from './MetricBar';
 import { FeedbackButton } from './FeedbackButton';
-import { confidenceLabel } from '../lib/analysis';
+import { confidenceLabel, scoreTone } from '../lib/analysis';
 import { buildRecommendations } from '../lib/recommendations';
 import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
+
+const VERDICT_BY_TONE = {
+  good: '전반적으로 안정적입니다.',
+  ok: '양호한 편이지만 관리 포인트가 있습니다.',
+  watch: '관리 우선순위를 정해야 합니다.',
+  warn: '촬영 조건과 피부 신호를 다시 확인해야 합니다.'
+};
 
 export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
   const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
   const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
   const recommendations = buildRecommendations(analysis);
+  const tone = scoreTone(analysis.overall);
   return (
     <main className="screen report-screen">
       <AppHeader title="분석 리포트" onBack={onBack} />
-      <section className="report-hero">
+      <section className={`report-hero tone-${tone}`}>
         <div>
           <p>종합 피부 컨디션</p>
           <strong>{analysis.overall}</strong>
@@ -23,13 +31,7 @@ export function ReportScreen({ imageUrl, analysis, onBack, onSelect }) {
           </span>
         </div>
         <div className="verdict-copy">
-          <b>
-            {analysis.overall >= 80
-              ? '전반적으로 안정적입니다.'
-              : analysis.overall >= 65
-                ? '관리 우선순위를 정해야 합니다.'
-                : '촬영 조건과 피부 신호를 다시 확인해야 합니다.'}
-          </b>
+          <b>{VERDICT_BY_TONE[tone]}</b>
           <span>사진 품질과 항목별 신뢰도를 함께 반영한 참고 결과입니다.</span>
         </div>
       </section>

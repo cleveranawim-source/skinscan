@@ -1,12 +1,14 @@
 import { AppHeader } from './AppHeader';
+import { scoreTone } from '../lib/analysis';
 
 export function DetailScreen({ metric, analysis, onBack }) {
+  const tone = scoreTone(metric.score);
   return (
     <main className="screen detail-screen">
       <AppHeader title={metric.label} onBack={onBack} />
       <section className="detail-score-card">
         <div>
-          <p>{metric.status}</p>
+          <p className={`tone-${tone}`}>{metric.status}</p>
           <strong>{metric.score}</strong>
         </div>
         <span>신뢰도 {metric.confidence}%</span>

@@ -783,6 +783,20 @@ button {
     var(--dark);
 }
 
+/* 점수 등급에 따라 리포트 히어로 색을 바꿉니다. "신뢰도를 낮춰 보여준다"는 원칙이
+   점수가 나쁠 때도 항상 안심되는 초록색으로 보이면 어긋나기 때문입니다. */
+.report-hero.tone-watch {
+  background:
+    linear-gradient(145deg, rgba(182, 106, 0, 0.88), rgba(17, 24, 23, 0.98)),
+    var(--dark);
+}
+
+.report-hero.tone-warn {
+  background:
+    linear-gradient(145deg, rgba(160, 43, 43, 0.88), rgba(17, 24, 23, 0.98)),
+    var(--dark);
+}
+
 .report-hero p {
   margin: 0;
   color: rgba(255, 255, 255, 0.74);
@@ -950,6 +964,14 @@ button {
   line-height: 1;
 }
 
+.metric-head strong.tone-watch {
+  color: #a15b00;
+}
+
+.metric-head strong.tone-warn {
+  color: #a02b2b;
+}
+
 .bar {
   height: 8px;
   margin: 12px 0 8px;
@@ -963,6 +985,14 @@ button {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), #69a88f);
+}
+
+.bar i.tone-watch {
+  background: linear-gradient(90deg, #b66a00, #e2a44c);
+}
+
+.bar i.tone-warn {
+  background: linear-gradient(90deg, #a02b2b, #d97a7a);
 }
 
 .recommend-card,
@@ -1107,6 +1137,19 @@ button {
   font-weight: 850;
 }
 
+.detail-score-card p.tone-good,
+.detail-score-card p.tone-ok {
+  color: #7ee2bd;
+}
+
+.detail-score-card p.tone-watch {
+  color: #ffd276;
+}
+
+.detail-score-card p.tone-warn {
+  color: #f5a3a3;
+}
+
 .detail-score-card strong {
   display: block;
   margin-top: 7px;
@@ -1172,11 +1215,19 @@ button {
     font-size: 29px;
   }
 
-  .capture-actions,
+  .capture-actions {
+    grid-template-columns: 1fr;
+  }
+
   .capture-checklist,
   .quality-grid,
   .report-priority {
-    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .quality-card-v2 {
+    min-height: 100px;
+    padding: 12px;
   }
 
   .camera-preview {
