@@ -180,7 +180,6 @@ export function App() {
         history={history}
         onUpload={handleUpload}
         onOpenCamera={() => setStage('camera')}
-        onOpenHistory={() => setStage('history')}
         onOpenEntry={openHistoryEntry}
         errorMessage={errorMessage}
       />

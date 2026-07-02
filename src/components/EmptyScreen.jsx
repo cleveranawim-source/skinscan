@@ -1,5 +1,4 @@
-import { AlertTriangle, Camera, CheckCircle2, ChevronRight, History, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
-import { AppHeader } from './AppHeader';
+import { AlertTriangle, Camera, CheckCircle2, ChevronRight, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
 import { FeedbackButton } from './FeedbackButton';
 import { TrendChart } from './TrendChart';
 import { protocolSteps } from '../lib/constants';
@@ -48,19 +47,20 @@ function DashboardCard({ history, onOpenEntry }) {
   );
 }
 
-export function EmptyScreen({ history = [], onUpload, onOpenCamera, onOpenHistory, onOpenEntry, errorMessage }) {
+export function EmptyScreen({ history = [], onUpload, onOpenCamera, onOpenEntry, errorMessage }) {
   const isReturning = history.length > 0;
 
   return (
     <main className="screen capture-screen">
-      <AppHeader
-        title="SkinScan"
-        rightAction={
-          <button className="icon-button" onClick={onOpenHistory} aria-label="분석 기록 보기">
-            <History />
-          </button>
-        }
-      />
+      {/* 홈에서만 브랜드 워드마크(가운데 정렬) + 캐릭터 마크.
+          기록 진입은 하단 탭이 담당하므로 헤더 우측 아이콘은 없습니다. */}
+      <header className="app-header brand-header">
+        <h1>
+          <img className="brand-face" src={`${import.meta.env.BASE_URL}icons/brand-face.png`} alt="" aria-hidden="true" />
+          <span className="brand-skin">Skin</span>
+          <span className="brand-scan">Scan</span>
+        </h1>
+      </header>
       {errorMessage && (
         <section className="inline-alert">
           <AlertTriangle />

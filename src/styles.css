@@ -1474,6 +1474,39 @@ button.history-card:hover {
   margin: 16px 18px 0;
 }
 
+/* ---- 홈 브랜드 워드마크 ---- */
+
+.brand-header {
+  grid-template-columns: 1fr;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.brand-header h1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-size: 27px;
+  font-weight: 920;
+  letter-spacing: -0.02em;
+}
+
+.brand-skin {
+  color: var(--ink);
+}
+
+.brand-scan {
+  color: var(--accent-strong);
+}
+
+/* 워드마크 옆 캐릭터 마크. 타이틀 글자 높이(27px)에 맞춰 살짝 크게 두고 세로 중앙 정렬. */
+.brand-face {
+  height: 34px;
+  width: auto;
+  margin-right: 8px;
+  align-self: center;
+}
+
 /* ---- 하단 탭 내비게이션 ---- */
 
 .tab-bar {
