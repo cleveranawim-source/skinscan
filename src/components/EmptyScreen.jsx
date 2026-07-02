@@ -3,7 +3,7 @@ import { FeedbackButton } from './FeedbackButton';
 import { TrendChart } from './TrendChart';
 import { protocolSteps } from '../lib/constants';
 import { metricDefinitions } from '../lib/metricDefinitions';
-import { hasFullReport, trendFor } from '../lib/history';
+import { deltaDisplay, hasFullReport, lightingComparability, trendFor } from '../lib/history';
 import { scoreTone } from '../lib/analysis';
 
 function relativeDay(iso) {
@@ -19,6 +19,8 @@ function DashboardCard({ history, onOpenEntry }) {
   const latest = history[0];
   const prev = history[1];
   const delta = prev ? latest.overall - prev.overall : null;
+  const deltaInfo = deltaDisplay(delta);
+  const comparability = prev ? lightingComparability(latest.raw, prev.raw) : null;
   const trend = trendFor(history, 'overall');
   const openable = hasFullReport(latest);
 
@@ -26,9 +28,9 @@ function DashboardCard({ history, onOpenEntry }) {
     <section className={`dashboard-card tone-border-${scoreTone(latest.overall)}`}>
       <div className="dash-top">
         <span>마지막 분석 · {relativeDay(latest.date)}</span>
-        {delta !== null && (
-          <span className={delta >= 0 ? 'delta-up' : 'delta-down'}>
-            지난번보다 {delta > 0 ? `+${delta}` : delta}
+        {deltaInfo && (
+          <span className={deltaInfo.cls}>
+            {deltaInfo.cls === 'delta-flat' ? `지난번과 ${deltaInfo.text}` : `지난번보다 ${deltaInfo.text}`}
           </span>
         )}
       </div>
@@ -36,6 +38,11 @@ function DashboardCard({ history, onOpenEntry }) {
         <strong>{latest.overall}</strong>
         <span>종합 피부 컨디션 · 신뢰도 {latest.confidence}%</span>
       </div>
+      {comparability && !comparability.comparable && (
+        <p className="compare-warning">
+          지난번과 촬영 조건({comparability.issues.join('·')})이 달라 점수 비교의 정확도가 낮아요.
+        </p>
+      )}
       {trend.length >= 2 && <TrendChart points={trend} />}
       {openable && (
         <button className="dash-report-link" onClick={() => onOpenEntry(latest)}>

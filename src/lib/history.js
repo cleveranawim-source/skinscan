@@ -117,6 +117,28 @@ export function importHistory(jsonText) {
   return { history: capped, imported, failed: false };
 }
 
+// 재촬영 간 점수 노이즈(조명·각도 미세 차이)가 있어서, 이 폭 안의 변화는
+// "변화"가 아니라 "비슷함"으로 표시합니다. 실측 편차가 쌓이면 값을 갱신하세요.
+export const DELTA_NOISE_FLOOR = 5;
+
+export function deltaDisplay(delta) {
+  if (delta === null || delta === undefined) return null;
+  if (Math.abs(delta) < DELTA_NOISE_FLOOR) return { text: '비슷해요', cls: 'delta-flat' };
+  return delta > 0 ? { text: `+${delta}`, cls: 'delta-up' } : { text: `${delta}`, cls: 'delta-down' };
+}
+
+// 두 스캔의 촬영 조건(조명)이 비교 가능한 수준인지 평가합니다.
+// 점수 공식은 사진 한 장 안에서는 일관되지만, 조명이 크게 다른 두 사진의 점수 차이는
+// 피부 변화가 아니라 촬영 조건 차이일 수 있어서 그 사실을 사용자에게 알려야 합니다.
+export function lightingComparability(rawA, rawB) {
+  if (!rawA || !rawB) return null;
+  const issues = [];
+  if (Math.abs(rawA.avgLum - rawB.avgLum) > 35) issues.push('밝기');
+  if (Math.abs(rawA.glareRatio - rawB.glareRatio) > 6) issues.push('반사광');
+  if (Math.abs(rawA.contrast - rawB.contrast) > 18) issues.push('대비');
+  return { comparable: issues.length === 0, issues };
+}
+
 export function formatHistoryDate(iso) {
   return new Date(iso).toLocaleString('ko-KR', {
     month: 'short',

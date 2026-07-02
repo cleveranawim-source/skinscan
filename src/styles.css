@@ -1453,10 +1453,16 @@ button.history-card:hover {
 }
 
 .delta-up,
-.delta-down {
+.delta-down,
+.delta-flat {
   border-radius: 999px;
   padding: 4px 9px;
   font-weight: 900;
+}
+
+.delta-flat {
+  color: var(--muted);
+  background: #eef2ef;
 }
 
 .delta-up {
@@ -1713,6 +1719,24 @@ button.history-card:hover {
 
 .legend-prev::before {
   background: var(--muted);
+}
+
+/* ---- 촬영 조건 비교성 경고 ---- */
+
+.compare-warning {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--warn-bg);
+  border: 1px solid #f2d59a;
+  color: #6d4300;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.radar-card .compare-warning {
+  margin: 6px 10px 8px;
 }
 
 /* ---- 리포트 품질 칩 ---- */

@@ -7,7 +7,7 @@ import { RadarChart } from './RadarChart';
 import { confidenceLabel, scoreTone } from '../lib/analysis';
 import { buildRecommendations } from '../lib/recommendations';
 import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
-import { formatHistoryDate } from '../lib/history';
+import { formatHistoryDate, lightingComparability } from '../lib/history';
 
 const VERDICT_BY_TONE = {
   good: '전반적으로 안정적입니다.',
@@ -21,6 +21,7 @@ export function ReportScreen({ imageUrl, analysis, previousEntry, onBack, onSele
   const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
   const recommendations = analysis.recommendations || buildRecommendations(analysis);
   const tone = scoreTone(analysis.overall);
+  const comparability = previousEntry ? lightingComparability(analysis.raw, previousEntry.raw) : null;
   return (
     <main className="screen report-screen">
       <AppHeader
@@ -74,6 +75,11 @@ export function ReportScreen({ imageUrl, analysis, previousEntry, onBack, onSele
           <span>바깥쪽일수록 좋은 상태</span>
         </div>
         <RadarChart metrics={analysis.metrics} previousMetrics={previousEntry?.metrics} />
+        {comparability && !comparability.comparable && (
+          <p className="compare-warning">
+            지난번과 촬영 조건({comparability.issues.join('·')})이 달라, 두 결과의 차이는 피부 변화가 아니라 조명 차이일 수 있어요.
+          </p>
+        )}
       </section>
 
       <section className="report-priority">

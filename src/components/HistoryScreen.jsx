@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronRight, Download, Info, Trash2, Upload } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { TrendChart } from './TrendChart';
-import { formatHistoryDate, hasFullReport, serializeHistory, trendFor } from '../lib/history';
+import { deltaDisplay, formatHistoryDate, hasFullReport, serializeHistory, trendFor } from '../lib/history';
 
 export function HistoryScreen({ history, onBack, onClear, onImport, onOpenEntry }) {
   const overallTrend = trendFor(history, 'overall');
@@ -75,7 +75,7 @@ export function HistoryScreen({ history, onBack, onClear, onImport, onOpenEntry 
           <section className="history-list">
             {history.map((entry, index) => {
               const prev = history[index + 1];
-              const delta = prev ? entry.overall - prev.overall : null;
+              const deltaInfo = deltaDisplay(prev ? entry.overall - prev.overall : null);
               const clickable = hasFullReport(entry);
               const Tag = clickable ? 'button' : 'article';
               return (
@@ -91,8 +91,8 @@ export function HistoryScreen({ history, onBack, onClear, onImport, onOpenEntry 
                   </div>
                   <div className="history-meta">
                     <span>신뢰도 {entry.confidence}%</span>
-                    {delta !== null && (
-                      <span className={delta >= 0 ? 'delta-up' : 'delta-down'}>{delta > 0 ? `+${delta}` : delta}</span>
+                    {deltaInfo && (
+                      <span className={deltaInfo.cls}>{deltaInfo.cls === 'delta-flat' ? '비슷' : deltaInfo.text}</span>
                     )}
                     {clickable && <ChevronRight />}
                   </div>
