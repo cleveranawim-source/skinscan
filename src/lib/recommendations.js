@@ -1,7 +1,12 @@
 import { productCatalog } from './productCatalog';
+import { getMetricTier } from './metricDefinitions';
 
 export function buildRecommendations(analysis) {
-  const weakMetrics = [...analysis.metrics].sort((a, b) => a.score - b.score);
+  // 실험적 지표(피부결·잔주름)는 사진 노이즈에 휘둘리므로 추천의 근거로 삼지 않습니다.
+  // 노이즈가 만든 가짜 저점수가 레티놀 세럼 같은 실제 구매 추천으로 이어지면 안 됩니다.
+  const weakMetrics = analysis.metrics
+    .filter((metric) => getMetricTier(metric.id) !== 'experimental')
+    .sort((a, b) => a.score - b.score);
   const focusIds = new Set(weakMetrics.slice(0, 3).map((metric) => metric.id));
   const ranked = productCatalog
     .map((product) => {

@@ -1,8 +1,35 @@
 // 각 지표는 이제 고정된 타원이 아니라, MediaPipe 얼굴 랜드마크로 찾은 실제 부위(area)에서만 값을 뽑습니다.
+
+// 지표별 "증거 등급". 7개 지표의 정확도는 균일하지 않습니다 — 일부는 물리적 근거가 있는
+// 색 신호(홍조=CIELAB a*, 번들거림=정반사)를 보지만, 일부는 사진의 픽셀 특성(고주파 엣지)을
+// 보기 때문에 초점·노이즈·압축·폰 카메라의 자동 보정에 크게 휘둘립니다. 실제로 주름 없는
+// 합성 얼굴에 노이즈만 입혀도 피부결·잔주름 점수가 "주의"로 나오는 것을 확인했습니다.
+// 이 차이를 숨기지 않고 배지로 드러내고, 우선 관리·추천 선정에서 실험적 지표를 제외합니다.
+export const TIER_META = {
+  core: {
+    label: '핵심',
+    rank: 0,
+    summary: '물리적 근거가 비교적 확실한 색 신호 기반 지표입니다.'
+  },
+  reference: {
+    label: '보조',
+    rank: 1,
+    summary: '합리적인 근사치지만 오인 가능성이 있어 참고용으로 보세요.'
+  },
+  experimental: {
+    label: '실험적',
+    rank: 2,
+    summary: '사진 상태(초점·노이즈·보정)에 크게 휘둘립니다. 점수보다 같은 조건에서의 추세만 참고하세요.'
+  }
+};
+
 export const metricDefinitions = [
   {
     id: 'redness',
     label: '홍조',
+    tier: 'core',
+    tierNote:
+      'CIELAB a*는 피부과에서도 홍반 평가에 쓰는 색 신호이고, 이마 기준선과의 상대 비교라 조명 영향이 일부 상쇄됩니다. 다만 조명 색온도·화장·화이트밸런스가 바뀌면 함께 흔들립니다.',
     reliable: '높음',
     model: 'CIELAB a* (볼·코) 대비 이마 기준선 상대값',
     area: '양볼, 코 주변',
@@ -12,6 +39,9 @@ export const metricDefinitions = [
   {
     id: 'tone',
     label: '피부톤 균일도',
+    tier: 'core',
+    tierNote:
+      '부위 간 밝기 편차는 물리적으로 의미 있는 신호입니다. 다만 한쪽에서 들어오는 빛(측광)을 톤 불균일로 잘못 읽을 수 있어, 정면에서 고르게 빛을 받은 사진일수록 믿을 만합니다.',
     reliable: '높음',
     model: '부위별 CIELAB L* 분산 + ITA° 참고값',
     area: '이마, 볼, 코, 턱',
@@ -21,6 +51,9 @@ export const metricDefinitions = [
   {
     id: 'spots',
     label: '색소·잡티 후보',
+    tier: 'reference',
+    tierNote:
+      '부위 평균보다 어두운 점을 찾는 방식이라 실제 색소침착과 점·그림자·수염·압축 노이즈를 완전히 구분하지 못합니다. 앱이 짚은 위치가 거울로 보이는 실제 잡티와 일치하는지 함께 확인하세요.',
     reliable: '중간',
     model: '부위 내 국소 어두운 영역 비율(부위 자체 평균 대비)',
     area: '볼, 이마',
@@ -30,6 +63,9 @@ export const metricDefinitions = [
   {
     id: 'texture',
     label: '피부결·거침',
+    tier: 'experimental',
+    tierNote:
+      '표면의 미세한 밝기 변화(고주파 신호)를 세는 방식이라, 실제 피부결보다 사진의 초점·노이즈·압축 상태에 크게 휘둘립니다. 요즘 폰 카메라의 자동 피부 보정이 이 신호 자체를 지우기도 합니다. 점수 하나만 보고 판단하지 말고, 같은 조건에서 찍은 여러 번의 추세만 참고하세요.',
     reliable: '중간',
     model: '볼·코 부위의 고주파 밝기 변화',
     area: '볼, 코 주변',
@@ -39,6 +75,9 @@ export const metricDefinitions = [
   {
     id: 'shine',
     label: '번들거림',
+    tier: 'core',
+    tierNote:
+      '하얗게 반사되는 하이라이트는 실제 피지막과 물리적으로 연결된 신호입니다. 다만 조명의 방향과 세기에 따라 같은 피부도 점수가 크게 달라지므로, 비슷한 조명에서 비교해야 의미가 있습니다.',
     reliable: '중간',
     model: 'T존(이마+코) 저채도 고휘도 하이라이트 비율',
     area: '이마, 코',
@@ -48,6 +87,9 @@ export const metricDefinitions = [
   {
     id: 'wrinkle',
     label: '잔주름 후보',
+    tier: 'experimental',
+    tierNote:
+      '셀카 거리와 해상도에서 잔주름은 매우 약한 신호이고, 머리카락·그림자·표정 주름과 구분이 어렵습니다. 점수 하나만 보고 판단하지 말고, 같은 조건에서 찍은 여러 번의 추세만 참고하세요.',
     reliable: '낮음',
     model: '눈가·이마·입가 부위 선형 엣지 밀도',
     area: '눈가, 이마, 입가',
@@ -57,6 +99,9 @@ export const metricDefinitions = [
   {
     id: 'blemish',
     label: '여드름·트러블 후보',
+    tier: 'reference',
+    tierNote:
+      '부위 평균보다 붉은 작은 돌기를 찾는 방식이라, 염증성 트러블 외의 붉은 반점(실핏줄, 자극 자국)도 섞일 수 있습니다. 앱이 짚은 부위가 실제 트러블 위치와 일치하는지 함께 확인하세요.',
     reliable: '낮음',
     model: '부위별(이마·볼·코·턱) 국소 붉은 돌기 비율(부위 자체 평균 대비)',
     area: '이마, 볼, 코, 턱',
@@ -64,3 +109,12 @@ export const metricDefinitions = [
     description: '"홍조"가 부위 전체의 평균 붉은기라면, 이 지표는 이마·볼·코·턱 각 부위 안에서 그 부위 평균보다 두드러지게 붉은 작은 돌기가 얼마나, 어느 부위에 몰려있는지를 봅니다.'
   }
 ];
+
+// 과거 기록의 지표 객체에는 tier가 저장되어 있지 않을 수 있으므로, 항상 id로 조회합니다.
+export function getMetricTier(id) {
+  return metricDefinitions.find((metric) => metric.id === id)?.tier ?? 'reference';
+}
+
+export function getMetricDefinition(id) {
+  return metricDefinitions.find((metric) => metric.id === id) ?? null;
+}

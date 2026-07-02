@@ -1,10 +1,14 @@
 import { AppHeader } from './AppHeader';
 import { scoreTone } from '../lib/analysis';
 import { getInterpretation } from '../lib/interpretations';
+import { getMetricDefinition, getMetricTier, TIER_META } from '../lib/metricDefinitions';
 
 export function DetailScreen({ metric, analysis, onBack }) {
   const tone = scoreTone(metric.score);
   const interpretation = getInterpretation(metric.id, tone);
+  // 과거 기록의 지표에는 tier/tierNote가 저장되어 있지 않을 수 있어 항상 정의에서 조회합니다.
+  const tier = getMetricTier(metric.id);
+  const tierNote = getMetricDefinition(metric.id)?.tierNote;
   return (
     <main className="screen detail-screen">
       <AppHeader title={metric.label} onBack={onBack} />
@@ -13,8 +17,19 @@ export function DetailScreen({ metric, analysis, onBack }) {
           <p className={`tone-${tone}`}>{metric.status}</p>
           <strong>{metric.score}</strong>
         </div>
-        <span>신뢰도 {metric.confidence}%</span>
+        <span>
+          <em className={`tier-badge tier-${tier}`}>{TIER_META[tier].label}</em>
+          신뢰도 {metric.confidence}%
+        </span>
       </section>
+      {tierNote && (
+        <section className={`explain-card${tier === 'experimental' ? ' warn' : ''}`}>
+          <h2>이 지표를 얼마나 믿을 수 있나요</h2>
+          <p>
+            <b>{TIER_META[tier].label} 지표</b> — {tierNote}
+          </p>
+        </section>
+      )}
       {interpretation && (
         <section className={`explain-card tone-card-${tone}`}>
           <h2>내 점수 해석</h2>

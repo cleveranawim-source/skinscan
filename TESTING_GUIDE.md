@@ -22,8 +22,9 @@ Ask testers to try:
 6. On the report, check the radar chart ("한눈에 보기") — 7 axes, and after a second analysis a translucent "지난번" overlay should appear.
 7. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).
 8. Open a metric's detail screen and check whether the "판단 근거"(basis) makes sense, and whether the score color (green/amber/red) matches how bad the number looks.
-9. Switch to the 기록 tab (bottom bar) and confirm the trend appears after at least two analyses; tap an entry to replay its full report. Try "내보내기" to download a backup file, then "가져오기" with that same file to confirm it says "새로 추가할 항목이 없습니다" (no duplicates).
-10. Copy the feedback template and send text feedback.
+9. Check the evidence-tier badges (핵심/보조/실험적) next to each metric name: 홍조·피부톤·번들거림 should be 핵심, 색소잡티·트러블 보조, 피부결·잔주름 실험적. Confirm that 피부결/잔주름 never appear under "우선 관리" or as the basis of a product recommendation, and that their detail screens show the "이 지표를 얼마나 믿을 수 있나요" warning.
+10. Switch to the 기록 tab (bottom bar) and confirm the trend appears after at least two analyses; tap an entry to replay its full report. Try "내보내기" to download a backup file, then "가져오기" with that same file to confirm it says "새로 추가할 항목이 없습니다" (no duplicates).
+11. Copy the feedback template and send text feedback.
 
 Also ask at least one tester to intentionally upload a non-face photo (a landscape, an object, a heavily cropped image) and a black-and-white/grayscale photo, to confirm the app blocks analysis with a clear message in both cases instead of producing a fake result.
 

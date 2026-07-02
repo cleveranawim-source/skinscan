@@ -8,6 +8,7 @@ import { confidenceLabel, scoreTone } from '../lib/analysis';
 import { buildRecommendations } from '../lib/recommendations';
 import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
 import { formatHistoryDate, lightingComparability } from '../lib/history';
+import { getMetricTier, TIER_META } from '../lib/metricDefinitions';
 
 const VERDICT_BY_TONE = {
   good: '전반적으로 안정적입니다.',
@@ -17,8 +18,17 @@ const VERDICT_BY_TONE = {
 };
 
 export function ReportScreen({ imageUrl, analysis, previousEntry, onBack, onSelect, onOpenHistory, onReviewQuality, historical }) {
-  const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
-  const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
+  // 우선 관리/상대적 안정은 실험적 지표(피부결·잔주름)를 제외하고 뽑습니다.
+  // 사진 노이즈에 휘둘리는 지표가 "가장 시급한 관리 포인트"로 올라오면 안 되기 때문입니다.
+  const trusted = analysis.metrics.filter((metric) => getMetricTier(metric.id) !== 'experimental');
+  const weakest = [...trusted].sort((a, b) => a.score - b.score).slice(0, 2);
+  // 신뢰 지표가 5개뿐이라 점수가 비슷하면 같은 지표가 양쪽에 다 뽑힐 수 있어, 우선 관리로
+  // 뽑힌 지표는 안정 후보에서 제외합니다.
+  const weakestIds = new Set(weakest.map((metric) => metric.id));
+  const stable = trusted
+    .filter((metric) => !weakestIds.has(metric.id))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2);
   const recommendations = analysis.recommendations || buildRecommendations(analysis);
   const tone = scoreTone(analysis.overall);
   const comparability = previousEntry ? lightingComparability(analysis.raw, previousEntry.raw) : null;
@@ -95,12 +105,21 @@ export function ReportScreen({ imageUrl, analysis, previousEntry, onBack, onSele
             <b key={metric.id}>{metric.label}</b>
           ))}
         </div>
+        <p className="priority-note">피부결·잔주름 같은 실험적 지표는 사진 상태에 민감해 우선순위 선정에서 제외됩니다.</p>
       </section>
       {imageUrl && <GuideFrame imageUrl={imageUrl} mode="analysis" rois={analysis.rois} />}
       <section className="metric-list">
         <div className="section-title">
           <h2>항목별 결과</h2>
           <span>점수와 신뢰도를 함께 보세요</span>
+        </div>
+        <div className="tier-legend">
+          {Object.entries(TIER_META).map(([key, meta]) => (
+            <span key={key}>
+              <em className={`tier-badge tier-${key}`}>{meta.label}</em>
+              {meta.summary}
+            </span>
+          ))}
         </div>
         {analysis.metrics.map((metric) => (
           <MetricBar metric={metric} key={metric.id} onSelect={onSelect} />
