@@ -1,8 +1,9 @@
-import { AlertTriangle, History, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, History, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { GuideFrame } from './GuideFrame';
 import { MetricBar } from './MetricBar';
 import { FeedbackButton } from './FeedbackButton';
+import { RadarChart } from './RadarChart';
 import { confidenceLabel, scoreTone } from '../lib/analysis';
 import { buildRecommendations } from '../lib/recommendations';
 import { catalogReviewStatus, catalogUpdatedAt } from '../lib/productCatalog';
@@ -15,7 +16,7 @@ const VERDICT_BY_TONE = {
   warn: '촬영 조건과 피부 신호를 다시 확인해야 합니다.'
 };
 
-export function ReportScreen({ imageUrl, analysis, onBack, onSelect, onOpenHistory, historical }) {
+export function ReportScreen({ imageUrl, analysis, previousEntry, onBack, onSelect, onOpenHistory, onReviewQuality, historical }) {
   const weakest = [...analysis.metrics].sort((a, b) => a.score - b.score).slice(0, 2);
   const stable = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 2);
   const recommendations = analysis.recommendations || buildRecommendations(analysis);
@@ -52,6 +53,29 @@ export function ReportScreen({ imageUrl, analysis, onBack, onSelect, onOpenHisto
           <span>사진 품질과 항목별 신뢰도를 함께 반영한 참고 결과입니다.</span>
         </div>
       </section>
+
+      {analysis.qualityScore !== undefined && (
+        onReviewQuality ? (
+          <button className="quality-chip" onClick={onReviewQuality}>
+            <CheckCircle2 />
+            사진 품질 {analysis.qualityScore} · {analysis.quality?.filter((q) => q.pass).length}/{analysis.quality?.length}개 통과 · 자세히 보기
+          </button>
+        ) : (
+          <div className="quality-chip static">
+            <CheckCircle2 />
+            사진 품질 {analysis.qualityScore} · {analysis.quality?.filter((q) => q.pass).length}/{analysis.quality?.length}개 통과
+          </div>
+        )
+      )}
+
+      <section className="radar-card">
+        <div className="section-title">
+          <h2>한눈에 보기</h2>
+          <span>바깥쪽일수록 좋은 상태</span>
+        </div>
+        <RadarChart metrics={analysis.metrics} previousMetrics={previousEntry?.metrics} />
+      </section>
+
       <section className="report-priority">
         <div>
           <span>우선 관리</span>

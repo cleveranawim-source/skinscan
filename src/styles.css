@@ -1473,3 +1473,239 @@ button.history-card:hover {
   width: calc(100% - 36px);
   margin: 16px 18px 0;
 }
+
+/* ---- 하단 탭 내비게이션 ---- */
+
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: min(480px, 100vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.92);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-bar button {
+  min-height: 60px;
+  border: 0;
+  background: transparent;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding-top: 9px;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 820;
+}
+
+.tab-bar button svg {
+  width: 23px;
+  height: 23px;
+}
+
+.tab-bar button.tab-active {
+  color: var(--accent-strong);
+}
+
+.has-tabbar .screen {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ---- 대시보드 홈 (재방문자) ---- */
+
+.dashboard-card {
+  margin: 18px 0 4px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  display: grid;
+  gap: 12px;
+}
+
+.dashboard-card.tone-border-good,
+.dashboard-card.tone-border-ok {
+  border-left-color: var(--accent);
+}
+
+.dashboard-card.tone-border-watch {
+  border-left-color: var(--warn);
+}
+
+.dashboard-card.tone-border-warn {
+  border-left-color: #a02b2b;
+}
+
+.dash-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.dash-score strong {
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.dash-score span {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dash-report-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--accent-strong);
+  font-size: 13.5px;
+  font-weight: 820;
+}
+
+.dash-report-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---- 레이더 차트 ---- */
+
+.radar-card {
+  margin: 16px 18px;
+  padding: 16px 8px 10px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.radar-card .section-title {
+  padding: 0 10px;
+  margin-bottom: 4px;
+}
+
+.radar-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.radar-grid {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.radar-axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.radar-now {
+  fill: rgba(15, 127, 92, 0.22);
+  stroke: var(--accent-strong);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.radar-prev {
+  fill: rgba(103, 115, 109, 0.1);
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+  stroke-linejoin: round;
+}
+
+.radar-dot {
+  fill: var(--accent-strong);
+}
+
+.radar-label {
+  fill: #33423a;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.radar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 6px 0 4px;
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.legend-now,
+.legend-prev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-now::before,
+.legend-prev::before {
+  content: '';
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legend-now {
+  color: var(--accent-strong);
+}
+
+.legend-now::before {
+  background: var(--accent-strong);
+}
+
+.legend-prev {
+  color: var(--muted);
+}
+
+.legend-prev::before {
+  background: var(--muted);
+}
+
+/* ---- 리포트 품질 칩 ---- */
+
+.quality-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 18px 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: #33423a;
+  font-size: 12.5px;
+  font-weight: 780;
+  width: fit-content;
+}
+
+.quality-chip svg {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.quality-chip.static {
+  cursor: default;
+}

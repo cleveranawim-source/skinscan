@@ -6,9 +6,17 @@ import { QualityScreen } from './components/QualityScreen';
 import { ReportScreen } from './components/ReportScreen';
 import { DetailScreen } from './components/DetailScreen';
 import { HistoryScreen } from './components/HistoryScreen';
+import { TabBar } from './components/TabBar';
 import { analyzeImage } from './lib/analysis';
 import { readImage } from './lib/imageUtils';
 import { getHistory, saveScan, clearHistory, importHistory } from './lib/history';
+
+// 사진 품질이 이 점수 이상이고 차단 사유가 없으면 품질 게이트 화면을 건너뛰고
+// 리포트로 직행합니다. 게이트는 "문제가 있을 때만" 끼어드는 화면입니다.
+const AUTO_PASS_QUALITY = 72;
+
+// 카메라·분석중·품질 게이트는 집중이 필요한 흐름이라 하단 탭을 숨깁니다.
+const TABBED_STAGES = new Set(['empty', 'history', 'report', 'detail', 'historyReport', 'historyDetail']);
 
 export function App() {
   const [stage, setStage] = useState('empty');
@@ -18,6 +26,8 @@ export function App() {
   const [history, setHistory] = useState(() => getHistory());
   const [historyEntry, setHistoryEntry] = useState(null);
   const [historyMetric, setHistoryMetric] = useState(null);
+  // 레이더 차트에 "지난번" 폴리곤을 겹치기 위한 직전 스캔. 저장 직전의 history[0]입니다.
+  const [previousEntry, setPreviousEntry] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   // 같은 분석 결과가 히스토리에 두 번 저장되는 걸 막습니다. 리포트에서 뒤로 갔다가
   // "분석 실행"을 다시 누르면 analysis 객체는 그대로인데 saveScan이 또 호출되던 버그.
@@ -29,6 +39,14 @@ export function App() {
     window.scrollTo(0, 0);
   }, [stage]);
 
+  function saveAnalysisOnce(result) {
+    if (result?.faceDetected && savedAnalysisRef.current !== result) {
+      setPreviousEntry(history[0] ?? null);
+      setHistory(saveScan(result));
+      savedAnalysisRef.current = result;
+    }
+  }
+
   async function runAnalysis(url, image) {
     setImageUrl(url);
     setAnalysis(null);
@@ -37,7 +55,12 @@ export function App() {
     try {
       const result = await analyzeImage(image);
       setAnalysis(result);
-      setStage('quality');
+      if (!result.analysisBlocked && result.qualityScore >= AUTO_PASS_QUALITY) {
+        saveAnalysisOnce(result);
+        setStage('report');
+      } else {
+        setStage('quality');
+      }
     } catch (error) {
       setErrorMessage('사진을 분석하는 중 문제가 발생했습니다. 다른 사진으로 다시 시도해주세요.');
       setStage('empty');
@@ -57,10 +80,7 @@ export function App() {
   }
 
   function handleAnalyze() {
-    if (analysis?.faceDetected && savedAnalysisRef.current !== analysis) {
-      setHistory(saveScan(analysis));
-      savedAnalysisRef.current = analysis;
-    }
+    saveAnalysisOnce(analysis);
     setStage('report');
   }
 
@@ -88,6 +108,10 @@ export function App() {
     setStage('empty');
   }
 
+  // 과거 리포트를 볼 때의 "지난번" = 그 기록 바로 이전(더 오래된) 기록.
+  const historyEntryIndex = historyEntry ? history.findIndex((entry) => entry.id === historyEntry.id) : -1;
+  const historyPrevious = historyEntryIndex >= 0 ? history[historyEntryIndex + 1] ?? null : null;
+
   let screen;
   if (stage === 'history') {
     screen = (
@@ -106,6 +130,7 @@ export function App() {
       <ReportScreen
         imageUrl=""
         analysis={historyEntry}
+        previousEntry={historyPrevious}
         historical
         onBack={() => {
           setHistoryEntry(null);
@@ -124,8 +149,10 @@ export function App() {
       <ReportScreen
         imageUrl={imageUrl}
         analysis={analysis}
+        previousEntry={previousEntry}
         onBack={() => setStage('quality')}
         onOpenHistory={() => setStage('history')}
+        onReviewQuality={() => setStage('quality')}
         onSelect={(metric) => {
           setSelectedMetric(metric);
           setStage('detail');
@@ -150,17 +177,29 @@ export function App() {
   } else {
     screen = (
       <EmptyScreen
+        history={history}
         onUpload={handleUpload}
         onOpenCamera={() => setStage('camera')}
         onOpenHistory={() => setStage('history')}
+        onOpenEntry={openHistoryEntry}
         errorMessage={errorMessage}
       />
     );
   }
 
+  const showTabBar = TABBED_STAGES.has(stage);
+  const activeTab = stage.startsWith('history') ? 'history' : 'scan';
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell${showTabBar ? ' has-tabbar' : ''}`}>
       <section className="phone-wrap">{screen}</section>
+      {showTabBar && (
+        <TabBar
+          active={activeTab}
+          onScan={() => setStage('empty')}
+          onHistory={() => setStage('history')}
+        />
+      )}
     </div>
   );
 }

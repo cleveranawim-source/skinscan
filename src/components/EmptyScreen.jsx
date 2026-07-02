@@ -1,10 +1,56 @@
-import { AlertTriangle, Camera, CheckCircle2, History, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Camera, CheckCircle2, ChevronRight, History, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { FeedbackButton } from './FeedbackButton';
+import { TrendChart } from './TrendChart';
 import { protocolSteps } from '../lib/constants';
 import { metricDefinitions } from '../lib/metricDefinitions';
+import { hasFullReport, trendFor } from '../lib/history';
+import { scoreTone } from '../lib/analysis';
 
-export function EmptyScreen({ onUpload, onOpenCamera, onOpenHistory, errorMessage }) {
+function relativeDay(iso) {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days <= 0) return '오늘';
+  if (days === 1) return '어제';
+  if (days < 30) return `${days}일 전`;
+  return new Date(iso).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+}
+
+// 재방문자의 첫 화면: 소개 문구 대신 지난 결과 요약과 추이를 보여줍니다.
+function DashboardCard({ history, onOpenEntry }) {
+  const latest = history[0];
+  const prev = history[1];
+  const delta = prev ? latest.overall - prev.overall : null;
+  const trend = trendFor(history, 'overall');
+  const openable = hasFullReport(latest);
+
+  return (
+    <section className={`dashboard-card tone-border-${scoreTone(latest.overall)}`}>
+      <div className="dash-top">
+        <span>마지막 분석 · {relativeDay(latest.date)}</span>
+        {delta !== null && (
+          <span className={delta >= 0 ? 'delta-up' : 'delta-down'}>
+            지난번보다 {delta > 0 ? `+${delta}` : delta}
+          </span>
+        )}
+      </div>
+      <div className="dash-score">
+        <strong>{latest.overall}</strong>
+        <span>종합 피부 컨디션 · 신뢰도 {latest.confidence}%</span>
+      </div>
+      {trend.length >= 2 && <TrendChart points={trend} />}
+      {openable && (
+        <button className="dash-report-link" onClick={() => onOpenEntry(latest)}>
+          지난 리포트 다시 보기
+          <ChevronRight />
+        </button>
+      )}
+    </section>
+  );
+}
+
+export function EmptyScreen({ history = [], onUpload, onOpenCamera, onOpenHistory, onOpenEntry, errorMessage }) {
+  const isReturning = history.length > 0;
+
   return (
     <main className="screen capture-screen">
       <AppHeader
@@ -21,17 +67,23 @@ export function EmptyScreen({ onUpload, onOpenCamera, onOpenHistory, errorMessag
           <p>{errorMessage}</p>
         </section>
       )}
-      <section className="capture-hero">
-        <div>
-          <p>PHOTO-BASED SKIN CHECK</p>
-          <h2>오늘 피부, 사진 한 장으로 확인</h2>
-          <span>이마·볼·코·눈가·턱을 얼굴 인식으로 찾아 부위별로 점수를 매깁니다. 조명이나 선명도가 부족하면 신뢰도를 낮춰 보여드려요.</span>
-        </div>
-      </section>
+
+      {isReturning ? (
+        <DashboardCard history={history} onOpenEntry={onOpenEntry} />
+      ) : (
+        <section className="capture-hero">
+          <div>
+            <p>PHOTO-BASED SKIN CHECK</p>
+            <h2>오늘 피부, 사진 한 장으로 확인</h2>
+            <span>이마·볼·코·눈가·턱을 얼굴 인식으로 찾아 부위별로 점수를 매깁니다. 조명이나 선명도가 부족하면 신뢰도를 낮춰 보여드려요.</span>
+          </div>
+        </section>
+      )}
+
       <div className="capture-actions primary-entry">
         <button className="primary-button" onClick={onOpenCamera}>
           <Camera />
-          촬영 시작
+          {isReturning ? '오늘 피부 스캔' : '촬영 시작'}
         </button>
         <label className="secondary-upload">
           <ImagePlus />
