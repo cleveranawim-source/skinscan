@@ -17,13 +17,13 @@ Ask testers to try:
 1. Open the app. First-time visitors see an intro screen; after at least one analysis, the home screen becomes a dashboard (last score, delta vs previous, trend).
 2. Try `촬영 시작`/`오늘 피부 스캔` or `앨범에서 선택`.
 3. In the camera preview, check whether the oval border turns green when the face is centered/close enough/level, and whether the on-screen hint (e.g. "조금 더 가까이 와주세요") matches what's actually wrong.
-4. After pressing the shutter, a 사진 확인 (photo review) screen shows the captured photo — confirm you can retake (다시 촬영) or proceed (이 사진으로 분석), and that analysis does NOT start until you confirm. (Album picks skip this step since you already saw the photo.)
-4. With a good photo, the quality-gate screen should be skipped entirely — you land straight on the report, with a "사진 품질 N · 통과" chip near the top that opens the gate for review. The gate screen should only appear when something is wrong with the photo.
-5. On the report, check the radar chart ("한눈에 보기") — 7 axes, and after a second analysis a translucent "지난번" overlay should appear.
-6. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).
-7. Open a metric's detail screen and check whether the "판단 근거"(basis) makes sense, and whether the score color (green/amber/red) matches how bad the number looks.
-8. Switch to the 기록 tab (bottom bar) and confirm the trend appears after at least two analyses; tap an entry to replay its full report. Try "내보내기" to download a backup file, then "가져오기" with that same file to confirm it says "새로 추가할 항목이 없습니다" (no duplicates).
-9. Copy the feedback template and send text feedback.
+4. After pressing the shutter, a 사진 확인 (photo review) screen shows the captured photo. Within a moment, a "품질 확인 중…" spinner should resolve into an actual quality score, pass-count, and confidence percentage on that same screen — confirm the number matches how the photo actually looks (blurry/shaky photos should show a low score and a warning, not a green "분석 가능"). If the photo is badly blocked (e.g. no face, severe blur), "이 사진으로 분석" should be disabled and only 다시 촬영 or 자세히 보기 should work. Analysis does NOT re-run when you confirm — it reuses the number already shown. (Album picks skip this step since you already saw the photo.)
+5. With a good photo, confirming from the review screen should skip the quality-gate screen entirely and land straight on the report, with a "사진 품질 N · 통과" chip near the top that opens the gate for review. The gate screen should only appear when something is wrong with the photo (or when you tap "자세히 보기" on the review screen).
+6. On the report, check the radar chart ("한눈에 보기") — 7 axes, and after a second analysis a translucent "지난번" overlay should appear.
+7. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).
+8. Open a metric's detail screen and check whether the "판단 근거"(basis) makes sense, and whether the score color (green/amber/red) matches how bad the number looks.
+9. Switch to the 기록 tab (bottom bar) and confirm the trend appears after at least two analyses; tap an entry to replay its full report. Try "내보내기" to download a backup file, then "가져오기" with that same file to confirm it says "새로 추가할 항목이 없습니다" (no duplicates).
+10. Copy the feedback template and send text feedback.
 
 Also ask at least one tester to intentionally upload a non-face photo (a landscape, an object, a heavily cropped image) and a black-and-white/grayscale photo, to confirm the app blocks analysis with a clear message in both cases instead of producing a fake result.
 

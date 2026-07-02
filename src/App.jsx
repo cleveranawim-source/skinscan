@@ -27,8 +27,14 @@ export function App() {
   const [history, setHistory] = useState(() => getHistory());
   const [historyEntry, setHistoryEntry] = useState(null);
   const [historyMetric, setHistoryMetric] = useState(null);
-  // 카메라 촬영 직후 확인 단계용. 사용자가 "이 사진으로 분석"을 눌러야 분석이 시작됩니다.
+  // 카메라 촬영 직후 확인 단계용. 사용자가 "이 사진으로 분석"을 눌러야 리포트로 넘어갑니다.
   const [captured, setCaptured] = useState(null);
+  // 확인 단계에서 미리 계산해두는 품질 결과. 셔터를 누른 직후 백그라운드로 계산해서
+  // "다시 찍을지 말지"를 사진만 보고 감으로 판단하지 않고 실제 신뢰도로 판단하게 합니다.
+  const [reviewAnalysis, setReviewAnalysis] = useState(null);
+  const [reviewError, setReviewError] = useState(false);
+  // 재촬영으로 새 사진이 들어오면 이전 계산이 뒤늦게 끝나도 무시하기 위한 토큰.
+  const captureTokenRef = useRef(0);
   // 레이더 차트에 "지난번" 폴리곤을 겹치기 위한 직전 스캔. 저장 직전의 history[0]입니다.
   const [previousEntry, setPreviousEntry] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -78,9 +84,54 @@ export function App() {
     runAnalysis(url, image);
   }
 
-  function handleCaptured(url, image) {
+  async function handleCaptured(url, image) {
+    const token = ++captureTokenRef.current;
     setCaptured({ url, image });
+    setReviewAnalysis(null);
+    setReviewError(false);
     setStage('review');
+    try {
+      const result = await analyzeImage(image);
+      if (captureTokenRef.current === token) {
+        setReviewAnalysis(result);
+      }
+    } catch (error) {
+      if (captureTokenRef.current === token) {
+        setReviewError(true);
+      }
+    }
+  }
+
+  function handleRetakeFromReview() {
+    captureTokenRef.current += 1;
+    setCaptured(null);
+    setReviewAnalysis(null);
+    setReviewError(false);
+    setStage('camera');
+  }
+
+  function handleConfirmFromReview() {
+    if (reviewAnalysis) {
+      if (reviewAnalysis.analysisBlocked) return;
+      setImageUrl(captured.url);
+      setAnalysis(reviewAnalysis);
+      if (reviewAnalysis.qualityScore >= AUTO_PASS_QUALITY) {
+        saveAnalysisOnce(reviewAnalysis);
+        setStage('report');
+      } else {
+        setStage('quality');
+      }
+      return;
+    }
+    // 확인 단계의 백그라운드 품질 계산이 실패했을 때의 대비: 버튼을 누른 시점에 다시 시도합니다.
+    runAnalysis(captured.url, captured.image);
+  }
+
+  function handleViewReviewDetails() {
+    if (!reviewAnalysis) return;
+    setImageUrl(captured.url);
+    setAnalysis(reviewAnalysis);
+    setStage('quality');
   }
 
   function handleAnalyze() {
@@ -106,6 +157,10 @@ export function App() {
   }
 
   function resetToEmpty() {
+    captureTokenRef.current += 1;
+    setCaptured(null);
+    setReviewAnalysis(null);
+    setReviewError(false);
     setImageUrl('');
     setAnalysis(null);
     setSelectedMetric(null);
@@ -178,8 +233,11 @@ export function App() {
     screen = (
       <ReviewScreen
         imageUrl={captured.url}
-        onRetake={() => setStage('camera')}
-        onConfirm={() => runAnalysis(captured.url, captured.image)}
+        analysis={reviewAnalysis}
+        analysisFailed={reviewError}
+        onRetake={handleRetakeFromReview}
+        onConfirm={handleConfirmFromReview}
+        onViewDetails={handleViewReviewDetails}
       />
     );
   } else if (stage === 'analyzing') {
