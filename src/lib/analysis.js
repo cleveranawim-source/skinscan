@@ -107,17 +107,23 @@ function sampleRegion(data, width, height, roi) {
   const meanLum = lumSum / n;
   const meanA = aSum / n;
   let lumSq = 0;
-  let aSq = 0;
   samples.forEach((sample) => {
     lumSq += (sample.lum - meanLum) ** 2;
-    aSq += (sample.a - meanA) ** 2;
   });
   const lumStd = Math.sqrt(lumSq / n);
-  const aStd = Math.sqrt(aSq / n);
-  const darkCount = samples.filter((sample) => sample.lum < meanLum - lumStd * 1.1).length;
+  // 잡티/트러블 후보는 절대 편차 기준으로 셉니다. 표준편차 기반 임계값(mean - 1.1σ 등)은
+  // 분포의 꼬리가 항상 존재해서 피부가 아무리 깨끗해도 10~14%가 기본으로 잡히는 통계적
+  // 편향이 있었습니다(깨끗한 스튜디오 인물사진에서 잡티 41점이 나오던 원인).
+  //
+  // 어두움을 두 대역으로 나눕니다:
+  // - 잡티 대역(평균-26 ~ -55): 색소침착·잡티가 실제로 만드는 중간 정도의 어두움
+  // - 매우 어두움(평균-55 미만): 수염·머리카락·콧구멍·깊은 그림자 — 피부 상태가 아니라
+  //   부위 오염 신호이므로, 잡티로 세지 않고 그 부위의 신뢰 가능 여부 판단에 씁니다.
+  const darkCount = samples.filter((sample) => sample.lum < meanLum - 26 && sample.lum >= meanLum - 55).length;
+  const veryDarkCount = samples.filter((sample) => sample.lum < meanLum - 55).length;
   // 그 부위 자체의 평균 a*보다 두드러지게 붉은 작은 영역 = 국소 트러블(붉은 돌기) 후보.
   // "홍조"(부위 전체 평균)와 다르게, 부위 안에서 튀는 지점만 잡아냅니다.
-  const redBumpCount = samples.filter((sample) => sample.a > meanA + aStd * 1.15).length;
+  const redBumpCount = samples.filter((sample) => sample.a > meanA + 6).length;
 
   return {
     n,
@@ -128,9 +134,18 @@ function sampleRegion(data, width, height, roi) {
     meanEdge: edgeSum / n,
     glareRatio: (glare / n) * 100,
     darkRatio: (darkCount / n) * 100,
+    veryDarkRatio: (veryDarkCount / n) * 100,
     redBumpRatio: (redBumpCount / n) * 100,
     lumStd
   };
+}
+
+// 잡티/트러블 카운트를 믿을 수 있는 부위인지 판단합니다.
+// 매우 어두운 픽셀이 6%를 넘으면 수염·머리카락·깊은 그림자가 섞인 부위이고,
+// 어두운 픽셀 합이 25%를 넘으면 잡티가 아니라 구조물(콧구멍, 입술 밑 그림자, 짙은 수염)
+// 입니다 — 실제 잡티가 부위의 1/4을 덮는 경우는 드뭅니다.
+function isRegionReliableForSpots(stats) {
+  return stats.veryDarkRatio <= 6 && stats.darkRatio + stats.veryDarkRatio <= 25;
 }
 
 // 얼굴 박스를 감싸는 사각형 전체(주변 여백 포함)로 촬영 품질(노출/반사/선명도)을 판단합니다.
@@ -261,39 +276,64 @@ function buildMetrics(roiStats, ambient, baseConfidence) {
   const toneAvgL = (forehead.meanL + leftCheek.meanL + rightCheek.meanL + nose.meanL + chin.meanL) / 5;
   const toneAvgB = (forehead.meanB + leftCheek.meanB + rightCheek.meanB + nose.meanB + chin.meanB) / 5;
   const ita = itaAngle(toneAvgL, toneAvgB);
-  const spotsDark = (forehead.darkRatio + leftCheek.darkRatio + rightCheek.darkRatio) / 3;
   const textureEdge = (leftCheek.meanEdge + rightCheek.meanEdge + nose.meanEdge) / 3;
   const shineGlare = (forehead.glareRatio + nose.glareRatio) / 2;
   const wrinkleEdge = (leftUnderEye.meanEdge + rightUnderEye.meanEdge + forehead.meanEdge + mouthCorners.meanEdge) / 4;
 
+  // 잡티: 수염·그림자로 오염된 부위는 빼고 계산합니다. 뺀 부위 수만큼 신뢰도를 낮추고
+  // 화면에도 공개합니다. 전부 오염됐으면 어쩔 수 없이 전체 평균을 쓰되 신뢰도를 크게 깎습니다.
+  const spotsCandidates = { forehead, leftCheek, rightCheek };
+  const spotsUsable = Object.values(spotsCandidates).filter(isRegionReliableForSpots);
+  const spotsExcluded = 3 - spotsUsable.length;
+  const spotsPool = spotsUsable.length > 0 ? spotsUsable : Object.values(spotsCandidates);
+  const spotsDark = spotsPool.reduce((sum, stats) => sum + stats.darkRatio, 0) / spotsPool.length;
+
   // 여드름·트러블 후보: "홍조"(부위 전체 평균)와 달리, 각 부위 안에서 그 부위 평균보다
   // 두드러지게 붉은 국소 지점의 비율을 부위별로 보고 어디에 몰려있는지 찾습니다.
+  // 잡티와 같은 이유로, 오염된 부위(수염 경계 등이 붉은 신호로 오인될 수 있음)는 제외합니다.
   const blemishRegions = { forehead, leftCheek, rightCheek, nose, chin };
-  const blemishEntries = Object.entries(blemishRegions).map(([name, stats]) => [name, stats.redBumpRatio]);
+  const blemishUsableEntries = Object.entries(blemishRegions).filter(([, stats]) => isRegionReliableForSpots(stats));
+  const blemishExcluded = 5 - blemishUsableEntries.length;
+  const blemishPool = blemishUsableEntries.length > 0 ? blemishUsableEntries : Object.entries(blemishRegions);
+  const blemishEntries = blemishPool.map(([name, stats]) => [name, stats.redBumpRatio]);
   const avgBlemish = blemishEntries.reduce((sum, [, ratio]) => sum + ratio, 0) / blemishEntries.length;
   const topBlemishRegion = [...blemishEntries].sort((a, b) => b[1] - a[1])[0];
 
+  // spots/blemish 계수는 절대 편차 기준(깨끗한 피부 ≈ 0%)에 맞춰 재보정했습니다.
+  // 시그마 기준 시절의 계수(2.7/3.4)는 기본치 10~14%를 전제로 한 값이라 그대로 두면
+  // 이제 거의 모든 사진이 만점 부근에 몰립니다.
   const scores = {
     redness: clamp(96 - Math.max(0, rednessRel) * 7, 15, 98),
     tone: clamp(98 - toneSpread * 2.2 - ambient.glareRatio * 1.0, 18, 98),
-    spots: clamp(94 - spotsDark * 2.7 - ambient.lumStd * 0.2, 18, 97),
+    spots: clamp(99 - spotsDark * 4.2, 18, 97),
     texture: clamp(96 - textureEdge * 2.6 - ambient.lumStd * 0.16, 16, 98),
     shine: clamp(96 - shineGlare * 5.2, 12, 98),
     wrinkle: clamp(92 - wrinkleEdge * 1.7 - ambient.lumStd * 0.12, 20, 95),
-    blemish: clamp(93 - avgBlemish * 3.4, 15, 96)
+    blemish: clamp(97 - avgBlemish * 5.5, 15, 96)
   };
 
+  const spotsNote = spotsExcluded > 0 ? ` · 그림자/수염 추정 ${spotsExcluded}개 부위 제외` : '';
+  const blemishNote = blemishExcluded > 0 ? ` · 그림자/수염 추정 ${blemishExcluded}개 부위 제외` : '';
   const raw = {
     redness: `이마 대비 볼·코 a* +${round(Math.max(0, rednessRel), 1)}`,
     tone: `톤 분산 ${round(toneSpread, 1)}, ITA ${round(ita, 1)}° (${itaCategory(ita)})`,
-    spots: `부위 내 어두운 후보 ${round(spotsDark, 1)}%`,
+    spots: `부위 내 어두운 후보 ${round(spotsDark, 1)}%${spotsNote}`,
     texture: `고주파 변화 ${round(textureEdge, 1)}`,
     shine: `T존 하이라이트 ${round(shineGlare, 1)}%`,
     wrinkle: `눈가·이마·입가 선형 후보 밀도 ${round(wrinkleEdge, 1)}`,
-    blemish: `평균 ${round(avgBlemish, 1)}%, ${BLEMISH_REGION_LABELS[topBlemishRegion[0]]}에 집중 (${round(topBlemishRegion[1], 1)}%)`
+    blemish: `평균 ${round(avgBlemish, 1)}%, ${BLEMISH_REGION_LABELS[topBlemishRegion[0]]}에 집중 (${round(topBlemishRegion[1], 1)}%)${blemishNote}`
   };
 
-  const confidenceOffsets = { redness: 0, tone: 0, spots: -4, texture: -6, shine: -8, wrinkle: -18, blemish: -20 };
+  // 오염으로 제외된 부위가 많을수록 해당 지표의 신뢰도를 추가로 낮춥니다.
+  const confidenceOffsets = {
+    redness: 0,
+    tone: 0,
+    spots: -4 - spotsExcluded * 7,
+    texture: -6,
+    shine: -8,
+    wrinkle: -18,
+    blemish: -20 - blemishExcluded * 5
+  };
 
   return metricDefinitions.map((metric) => {
     const score = scores[metric.id];
@@ -320,7 +360,10 @@ export async function analyzeImage(image) {
   ctx.drawImage(image, 0, 0, width, height);
   const { data } = ctx.getImageData(0, 0, width, height);
 
-  const resolutionScore = clamp((Math.min(image.width, image.height) / 900) * 100, 35, 100);
+  // 하한을 0으로 둬야 극저해상도가 하드블록(CRITICAL_QUALITY_FLOOR=35)에 걸립니다.
+  // 예전 하한 35는 블록 기준과 같은 값이라, 해상도는 아무리 낮아도 차단이 불가능했습니다.
+  // 이 공식 기준으로 짧은 변이 약 315px 미만이면 점수가 35 밑으로 내려가 차단됩니다.
+  const resolutionScore = clamp((Math.min(image.width, image.height) / 900) * 100, 0, 100);
 
   let landmarks = null;
   let faceMeshError = false;

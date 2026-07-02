@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EmptyScreen } from './components/EmptyScreen';
 import { CameraScreen } from './components/CameraScreen';
 import { AnalyzingScreen } from './components/AnalyzingScreen';
@@ -19,6 +19,9 @@ export function App() {
   const [historyEntry, setHistoryEntry] = useState(null);
   const [historyMetric, setHistoryMetric] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  // 같은 분석 결과가 히스토리에 두 번 저장되는 걸 막습니다. 리포트에서 뒤로 갔다가
+  // "분석 실행"을 다시 누르면 analysis 객체는 그대로인데 saveScan이 또 호출되던 버그.
+  const savedAnalysisRef = useRef(null);
 
   // 화면(stage)이 바뀔 때마다 스크롤을 맨 위로 되돌립니다.
   // 그렇지 않으면 직전 화면에서 스크롤해 내려간 위치가 다음 화면에 그대로 남습니다.
@@ -54,8 +57,9 @@ export function App() {
   }
 
   function handleAnalyze() {
-    if (analysis?.faceDetected) {
+    if (analysis?.faceDetected && savedAnalysisRef.current !== analysis) {
       setHistory(saveScan(analysis));
+      savedAnalysisRef.current = analysis;
     }
     setStage('report');
   }

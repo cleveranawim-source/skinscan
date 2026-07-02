@@ -34,7 +34,11 @@ function interOcularDistance(landmarks, width, height) {
 
 export function buildRois(landmarks, width, height) {
   const iod = interOcularDistance(landmarks, width, height);
-  const radius = Math.max(10, iod * 0.62);
+  // 반지름을 눈 사이 거리의 0.34배로 잡습니다. 예전 값(0.62)은 부위 반지름이 얼굴 폭의
+  // 1/3에 달해서 턱 ROI에 셔츠·입술이, 볼 ROI에 머리카락·턱선·배경이 섞여 들어갔고
+  // (부위 내 밝기 표준편차 40~49 — 순수 피부에서는 나올 수 없는 수치), 이 오염이
+  // 잡티/트러블 카운트를 크게 부풀렸습니다. 줄인 뒤에도 부위당 수천 픽셀이라 통계는 충분합니다.
+  const radius = Math.max(10, iod * 0.34);
   const rois = {};
   Object.entries(LANDMARK_CLUSTERS).forEach(([name, indices]) => {
     const center = averagePoint(landmarks, indices, width, height);
