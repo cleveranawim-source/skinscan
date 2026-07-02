@@ -3,6 +3,7 @@ import { EmptyScreen } from './components/EmptyScreen';
 import { CameraScreen } from './components/CameraScreen';
 import { AnalyzingScreen } from './components/AnalyzingScreen';
 import { QualityScreen } from './components/QualityScreen';
+import { ReviewScreen } from './components/ReviewScreen';
 import { ReportScreen } from './components/ReportScreen';
 import { DetailScreen } from './components/DetailScreen';
 import { HistoryScreen } from './components/HistoryScreen';
@@ -26,6 +27,8 @@ export function App() {
   const [history, setHistory] = useState(() => getHistory());
   const [historyEntry, setHistoryEntry] = useState(null);
   const [historyMetric, setHistoryMetric] = useState(null);
+  // 카메라 촬영 직후 확인 단계용. 사용자가 "이 사진으로 분석"을 눌러야 분석이 시작됩니다.
+  const [captured, setCaptured] = useState(null);
   // 레이더 차트에 "지난번" 폴리곤을 겹치기 위한 직전 스캔. 저장 직전의 history[0]입니다.
   const [previousEntry, setPreviousEntry] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -76,7 +79,8 @@ export function App() {
   }
 
   function handleCaptured(url, image) {
-    runAnalysis(url, image);
+    setCaptured({ url, image });
+    setStage('review');
   }
 
   function handleAnalyze() {
@@ -168,6 +172,14 @@ export function App() {
         onAnalyze={handleAnalyze}
         onRetake={() => setStage('camera')}
         onReset={resetToEmpty}
+      />
+    );
+  } else if (stage === 'review' && captured) {
+    screen = (
+      <ReviewScreen
+        imageUrl={captured.url}
+        onRetake={() => setStage('camera')}
+        onConfirm={() => runAnalysis(captured.url, captured.image)}
       />
     );
   } else if (stage === 'analyzing') {

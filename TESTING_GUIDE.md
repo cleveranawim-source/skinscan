@@ -17,6 +17,7 @@ Ask testers to try:
 1. Open the app. First-time visitors see an intro screen; after at least one analysis, the home screen becomes a dashboard (last score, delta vs previous, trend).
 2. Try `촬영 시작`/`오늘 피부 스캔` or `앨범에서 선택`.
 3. In the camera preview, check whether the oval border turns green when the face is centered/close enough/level, and whether the on-screen hint (e.g. "조금 더 가까이 와주세요") matches what's actually wrong.
+4. After pressing the shutter, a 사진 확인 (photo review) screen shows the captured photo — confirm you can retake (다시 촬영) or proceed (이 사진으로 분석), and that analysis does NOT start until you confirm. (Album picks skip this step since you already saw the photo.)
 4. With a good photo, the quality-gate screen should be skipped entirely — you land straight on the report, with a "사진 품질 N · 통과" chip near the top that opens the gate for review. The gate screen should only appear when something is wrong with the photo.
 5. On the report, check the radar chart ("한눈에 보기") — 7 axes, and after a second analysis a translucent "지난번" overlay should appear.
 6. Read the result and product recommendations, including the ROI labels overlaid on the photo (이마/볼/코/눈가/턱).

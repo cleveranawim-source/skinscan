@@ -114,7 +114,8 @@ button {
 .capture-screen,
 .quality-screen,
 .report-screen,
-.detail-screen {
+.detail-screen,
+.review-screen {
   padding-bottom: 28px;
 }
 
