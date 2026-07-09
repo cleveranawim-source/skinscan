@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, ChevronRight, RotateCcw, ScanLine } from 'lucide-react';
 import { AppHeader } from './AppHeader';
 import { GuideFrame } from './GuideFrame';
+import { StepDots } from './StepDots';
 import { confidenceLabel } from '../lib/analysis';
 
 const AUTO_PASS_QUALITY = 72;
@@ -21,6 +22,7 @@ export function ReviewScreen({ imageUrl, analysis, analysisFailed, onRetake, onC
   return (
     <main className="screen review-screen">
       <AppHeader title="사진 확인" onBack={onRetake} />
+      <StepDots step={1} />
       <section className="quality-hero">
         <GuideFrame imageUrl={imageUrl} mode="scan" />
         <div className="quality-verdict">

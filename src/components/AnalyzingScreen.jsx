@@ -1,10 +1,12 @@
 import { AppHeader } from './AppHeader';
 import { GuideFrame } from './GuideFrame';
+import { StepDots } from './StepDots';
 
 export function AnalyzingScreen({ imageUrl }) {
   return (
     <main className="screen analyzing-screen">
       <AppHeader title="분석 중" />
+      <StepDots step={2} />
       <section className="quality-hero">
         <GuideFrame imageUrl={imageUrl} mode="scan" />
       </section>

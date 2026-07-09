@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Info, XCircle } from 'lucide-react';
-import { AppHeader } from './AppHeader';
+import { ImagePlus, SwitchCamera, X, XCircle } from 'lucide-react';
+import { StepDots } from './StepDots';
 import { loadImageFromUrl } from '../lib/imageUtils';
 import { detectVideoFrameLandmarks } from '../lib/faceMesh';
 import { estimateFaceGeometry } from '../lib/roi';
@@ -19,7 +19,7 @@ function evaluateGuide(geometry) {
   if (Math.abs(geometry.rollDeg) > 12) {
     return { status: 'adjust', message: '고개를 똑바로 세워주세요' };
   }
-  return { status: 'good', message: '좋아요, 이대로 촬영하세요' };
+  return { status: 'good', message: '좋아요, 그대로 계세요' };
 }
 
 // 프레임을 alpha = 1/(n+1)로 순서대로 겹쳐 그리면 픽셀별 평균과 같은 결과가 됩니다.
@@ -40,19 +40,20 @@ async function captureBurst(video, count, gapMs) {
   return canvas;
 }
 
-export function CameraScreen({ onClose, onCaptured }) {
+export function CameraScreen({ onClose, onCaptured, onUpload }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const [status, setStatus] = useState('카메라를 준비하는 중입니다.');
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
   const [capturing, setCapturing] = useState(false);
+  const [facingMode, setFacingMode] = useState('user');
   const [guide, setGuide] = useState({ status: 'searching', message: '얼굴을 찾는 중이에요' });
 
   useEffect(() => {
     let cancelled = false;
 
     async function startCamera() {
+      setReady(false);
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
           setError('이 브라우저에서는 카메라 촬영을 지원하지 않습니다.');
@@ -60,7 +61,7 @@ export function CameraScreen({ onClose, onCaptured }) {
         }
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: 'user',
+            facingMode,
             width: { ideal: 1280 },
             height: { ideal: 1600 }
           },
@@ -70,15 +71,21 @@ export function CameraScreen({ onClose, onCaptured }) {
           stream.getTracks().forEach((track) => track.stop());
           return;
         }
+        streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
           setReady(true);
-          setStatus('얼굴을 프레임 안에 맞춘 뒤 촬영하세요.');
+          setError('');
         }
       } catch (cameraError) {
-        setError('카메라 권한을 허용해야 촬영할 수 있습니다. 권한이 어렵다면 사진 선택을 이용하세요.');
+        // 후면 카메라가 없는 기기에서 전환을 시도한 경우 전면으로 되돌립니다.
+        if (facingMode === 'environment') {
+          setFacingMode('user');
+          return;
+        }
+        setError('카메라 권한을 허용해야 촬영할 수 있습니다. 권한이 어렵다면 앨범에서 선택하세요.');
       }
     }
 
@@ -87,7 +94,7 @@ export function CameraScreen({ onClose, onCaptured }) {
       cancelled = true;
       streamRef.current?.getTracks().forEach((track) => track.stop());
     };
-  }, []);
+  }, [facingMode]);
 
   // 라이브 얼굴 정렬 가이드: 촬영 전에 이미 얼굴이 잘 잡혔는지 실시간으로 보여줘서
   // "찍고 -> 확인하고 -> 다시 찍고"의 왕복을 줄입니다. 실패해도 촬영 자체는 막지 않습니다.
@@ -146,35 +153,48 @@ export function CameraScreen({ onClose, onCaptured }) {
 
   return (
     <main className="screen camera-screen">
-      <AppHeader title="카메라 촬영" onBack={onClose} />
+      <div className="camera-top">
+        <button className="icon-button" onClick={onClose} aria-label="닫기">
+          <X />
+        </button>
+        <StepDots step={0} onDark />
+        <span className="camera-top-spacer" />
+      </div>
       <section className="camera-preview">
         <video ref={videoRef} playsInline muted />
         <div className={`oval-guide oval-guide-${guide.status}`} />
-        <div className="camera-topbar">
-          <span>{ready ? guide.message : '얼굴을 타원 안에 맞추세요'}</span>
+        <div className={`camera-pill camera-pill-${guide.status}`} aria-live="polite">
+          {ready ? guide.message : '카메라를 준비하는 중이에요'}
         </div>
-        <div className="camera-hud">
-          <span>정면</span>
-          <span>밝은 조명</span>
-          <span>무보정</span>
-        </div>
-        <button className="shutter-button" onClick={captureFrame} disabled={!ready || capturing} aria-label="촬영">
-          <Camera />
-        </button>
       </section>
-      <section className={`camera-status ${error ? 'error' : ''}`} aria-live="polite">
-        {error ? <XCircle /> : <Info />}
-        <p>{error || (capturing ? '촬영 중입니다…' : status)}</p>
-      </section>
-      <div className="camera-controls">
-        <button className="secondary-button" onClick={onClose}>
-          취소
+      {error && (
+        <section className="camera-status error">
+          <XCircle />
+          <p>{error}</p>
+        </section>
+      )}
+      <div className="camera-dock">
+        <label className="dock-side" aria-label="앨범에서 선택">
+          <ImagePlus />
+          <input type="file" accept="image/*" onChange={onUpload} />
+        </label>
+        <button
+          className={`shutter-button${guide.status === 'good' ? ' shutter-good' : ''}`}
+          onClick={captureFrame}
+          disabled={!ready || capturing}
+          aria-label="촬영"
+        >
+          <i />
         </button>
-        <button className="primary-button" onClick={captureFrame} disabled={!ready || capturing}>
-          <Camera />
-          사진 촬영
+        <button
+          className="dock-side"
+          onClick={() => setFacingMode((mode) => (mode === 'user' ? 'environment' : 'user'))}
+          aria-label="카메라 전환"
+        >
+          <SwitchCamera />
         </button>
       </div>
+      <p className="camera-caption">{capturing ? '촬영 중입니다…' : '얼굴이 타원에 맞으면 셔터 링이 초록으로 켜져요'}</p>
     </main>
   );
 }

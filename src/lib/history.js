@@ -148,6 +148,37 @@ export function formatHistoryDate(iso) {
   });
 }
 
+// 로컬 타임존 기준 YYYY-MM-DD. 'sv-SE' 로케일이 이 형식을 그대로 씁니다.
+function localDayKey(dateLike) {
+  return new Date(dateLike).toLocaleDateString('sv-SE');
+}
+
+// 스캔한 날의 수(같은 날 여러 번 찍어도 1일). 홈의 "기록 N일째" 표기에 씁니다.
+export function scanDayCount(history) {
+  return new Set(history.map((entry) => localDayKey(entry.date))).size;
+}
+
+// 이번 주(월요일 시작) 7일에 대해, 스캔 여부/오늘/미래 상태를 돌려줍니다. 홈 주간 스트립용.
+export function currentWeekStrip(history) {
+  const scannedDays = new Set(history.map((entry) => localDayKey(entry.date)));
+  const today = new Date();
+  const todayKey = localDayKey(today);
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const labels = ['월', '화', '수', '목', '금', '토', '일'];
+  return labels.map((label, i) => {
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
+    const key = localDayKey(day);
+    return {
+      label,
+      scanned: scannedDays.has(key),
+      isToday: key === todayKey,
+      isFuture: key > todayKey
+    };
+  });
+}
+
 export function trendFor(history, metricId) {
   return [...history]
     .reverse()

@@ -1,10 +1,15 @@
 import { AlertTriangle, Camera, CheckCircle2, ChevronRight, ImagePlus, Lock, ShieldCheck } from 'lucide-react';
 import { FeedbackButton } from './FeedbackButton';
 import { TrendChart } from './TrendChart';
+import { Sparkline } from './Sparkline';
 import { protocolSteps } from '../lib/constants';
 import { metricDefinitions } from '../lib/metricDefinitions';
-import { deltaDisplay, hasFullReport, lightingComparability, trendFor } from '../lib/history';
+import { currentWeekStrip, deltaDisplay, hasFullReport, lightingComparability, scanDayCount, trendFor } from '../lib/history';
 import { scoreTone } from '../lib/analysis';
+
+// 홈에 추세를 노출하는 핵심 3지표. 증거 등급이 '핵심'인 지표만 씁니다 —
+// 실험적 지표(피부결·잔주름)의 등락을 첫 화면에서 신호처럼 보여주지 않기 위해서입니다.
+const CORE_TREND_IDS = ['redness', 'tone', 'shine'];
 
 function relativeDay(iso) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -54,16 +59,69 @@ function DashboardCard({ history, onOpenEntry }) {
   );
 }
 
+// 이번 주(월~일) 스캔 여부를 점으로 보여주는 스트립. "기록이 쌓이는 앱"이라는
+// 정체성을 첫 화면에서 만드는 장치입니다.
+function WeekStrip({ history }) {
+  const days = currentWeekStrip(history);
+  return (
+    <section className="week-card" aria-label="이번 주 기록 현황">
+      {days.map((day) => (
+        <div className="week-day" key={day.label}>
+          <p>{day.label}</p>
+          <span
+            className={
+              day.scanned
+                ? 'dot dot-done'
+                : day.isToday
+                  ? 'dot dot-today'
+                  : day.isFuture
+                    ? 'dot dot-future'
+                    : 'dot'
+            }
+          />
+        </div>
+      ))}
+    </section>
+  );
+}
+
+// 핵심 지표 3개의 미니 추세. 2회 이상 기록된 지표만 줄이 생깁니다.
+function CoreTrends({ history }) {
+  const rows = CORE_TREND_IDS.map((id) => {
+    const definition = metricDefinitions.find((metric) => metric.id === id);
+    const points = trendFor(history, id);
+    return { id, label: definition?.label ?? id, points };
+  }).filter((row) => row.points.length >= 2);
+
+  if (rows.length === 0) {
+    return (
+      <section className="core-trends empty">
+        <p>이틀 이상 기록하면 핵심 지표의 추세가 여기에 보여요.</p>
+      </section>
+    );
+  }
+  return (
+    <section className="core-trends" aria-label="핵심 지표 추세">
+      {rows.map((row) => (
+        <div className="core-trend-row" key={row.id}>
+          <span>{row.label}</span>
+          <Sparkline points={row.points} />
+          <strong>{row.points[row.points.length - 1].score}</strong>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 export function EmptyScreen({ history = [], onUpload, onOpenCamera, onOpenEntry, errorMessage }) {
   const isReturning = history.length > 0;
 
   return (
     <main className="screen capture-screen">
-      {/* 홈에서만 브랜드 워드마크(가운데 정렬) + 캐릭터 마크.
+      {/* 홈에서만 브랜드 워드마크(가운데 정렬, 명조 세리프).
           기록 진입은 하단 탭이 담당하므로 헤더 우측 아이콘은 없습니다. */}
       <header className="app-header brand-header">
         <h1>
-          <img className="brand-face" src={`${import.meta.env.BASE_URL}icons/brand-face.png`} alt="" aria-hidden="true" />
           <span className="brand-skin">Skin</span>
           <span className="brand-scan">Scan</span>
         </h1>
@@ -76,7 +134,17 @@ export function EmptyScreen({ history = [], onUpload, onOpenCamera, onOpenEntry,
       )}
 
       {isReturning ? (
-        <DashboardCard history={history} onOpenEntry={onOpenEntry} />
+        <>
+          <div className="diary-head">
+            <span className="diary-date">
+              {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' })}
+            </span>
+            <span className="streak-chip">기록 {scanDayCount(history)}일째</span>
+          </div>
+          <DashboardCard history={history} onOpenEntry={onOpenEntry} />
+          <WeekStrip history={history} />
+          <CoreTrends history={history} />
+        </>
       ) : (
         <section className="capture-hero">
           <div>

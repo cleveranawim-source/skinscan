@@ -1,18 +1,20 @@
 :root {
-  --bg: #f3f5f2;
+  --bg: #faf5ef;
   --surface: #ffffff;
-  --surface-soft: #f8faf8;
-  --ink: #17201b;
-  --muted: #67736d;
-  --line: #dfe6e1;
-  --accent: #0f7f5c;
-  --accent-strong: #085f45;
-  --accent-soft: #e7f4ee;
-  --warn: #b66a00;
-  --warn-bg: #fff4dd;
-  --dark: #111817;
+  --surface-soft: #f7f2ea;
+  --ink: #221e1b;
+  --muted: #8a7f76;
+  --line: #ebe2d8;
+  --accent: #c4766a;
+  --accent-strong: #9c5348;
+  --accent-soft: #f3e2dc;
+  --warn: #a9762f;
+  --warn-bg: #f7edda;
+  --dark: #1c1815;
   --radius: 14px;
-  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* 숫자·제목용 명조 세리프. 점수가 "측정기 출력"이 아니라 "에디토리얼"로 읽히게 하는 핵심. */
+  --font-display: 'Gowun Batang', 'Apple SD Gothic Neo', serif;
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -22,9 +24,7 @@
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    linear-gradient(135deg, rgba(15, 127, 92, 0.08), transparent 34%),
-    var(--bg);
+  background: var(--bg);
 }
 
 button,
@@ -75,8 +75,8 @@ button {
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  background: rgba(243, 245, 242, 0.88);
-  border-bottom: 1px solid rgba(223, 230, 225, 0.78);
+  background: rgba(250, 245, 239, 0.88);
+  border-bottom: 1px solid rgba(235, 226, 216, 0.78);
   backdrop-filter: blur(18px);
 }
 
@@ -84,7 +84,7 @@ button {
   margin: 0;
   text-align: center;
   font-size: 20px;
-  font-weight: 860;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -132,7 +132,7 @@ button {
   margin: 0 0 10px;
   color: var(--accent);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.08em;
 }
 
@@ -141,7 +141,7 @@ button {
   max-width: 380px;
   font-size: 32px;
   line-height: 1.12;
-  font-weight: 920;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -152,7 +152,7 @@ button {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.55;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .capture-actions,
@@ -172,8 +172,8 @@ button {
   z-index: 18;
   margin: 0 -18px;
   padding: 12px 18px;
-  background: rgba(243, 245, 242, 0.92);
-  border-bottom: 1px solid rgba(223, 230, 225, 0.65);
+  background: rgba(250, 245, 239, 0.92);
+  border-bottom: 1px solid rgba(235, 226, 216, 0.65);
   backdrop-filter: blur(18px);
 }
 
@@ -182,21 +182,22 @@ button {
 .secondary-upload,
 .feedback-button,
 .text-upload {
-  border-radius: var(--radius);
+  border-radius: 999px;
   border: 0;
   min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-weight: 860;
-  letter-spacing: 0;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
+/* 잉크 블랙 필 버튼 — 뷰티 브랜드 공통 문법. 포인트 컬러(로즈)는 상태·강조에만 씁니다. */
 .primary-button {
-  color: #fff;
-  background: var(--accent-strong);
-  box-shadow: 0 14px 28px rgba(8, 95, 69, 0.18);
+  color: var(--bg);
+  background: var(--ink);
+  box-shadow: 0 10px 22px rgba(34, 30, 27, 0.14);
 }
 
 .primary-entry .primary-button {
@@ -268,9 +269,9 @@ button {
   border-radius: 999px;
   background: var(--surface-soft);
   border: 1px solid var(--line);
-  color: #33423a;
+  color: #55493f;
   font-size: 12.5px;
-  font-weight: 750;
+  font-weight: 600;
 }
 
 .protocol-inline svg {
@@ -286,13 +287,13 @@ button {
   overflow: hidden;
   border-radius: 18px;
   background:
-    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.98), rgba(223, 233, 228, 0.86) 50%, rgba(194, 209, 204, 0.72)),
-    #dce6e1;
-  border: 1px solid rgba(214, 224, 218, 0.9);
+    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.98), rgba(235, 226, 216, 0.86) 50%, rgba(211, 199, 185, 0.72)),
+    #e8dfd3;
+  border: 1px solid rgba(229, 220, 207, 0.9);
 }
 
 .guide-frame.with-photo {
-  background: #d9e0dc;
+  background: #e5dccf;
 }
 
 .guide-frame img {
@@ -307,8 +308,8 @@ button {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, transparent 49.8%, rgba(23, 32, 27, 0.08) 50%, transparent 50.2%),
-    linear-gradient(0deg, transparent 49.8%, rgba(23, 32, 27, 0.08) 50%, transparent 50.2%);
+    linear-gradient(90deg, transparent 49.8%, rgba(34, 30, 27, 0.08) 50%, transparent 50.2%),
+    linear-gradient(0deg, transparent 49.8%, rgba(34, 30, 27, 0.08) 50%, transparent 50.2%);
 }
 
 .oval-guide {
@@ -329,7 +330,7 @@ button {
   right: 0;
   height: 3px;
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 28px rgba(15, 127, 92, 0.72);
+  box-shadow: 0 0 28px rgba(196, 118, 106, 0.6);
   animation: scan 2.3s ease-in-out infinite;
 }
 
@@ -379,7 +380,7 @@ button {
 
 .trust-panel strong {
   font-size: 15px;
-  font-weight: 880;
+  font-weight: 700;
 }
 
 .trust-panel p,
@@ -393,7 +394,7 @@ button {
   color: var(--muted);
   line-height: 1.55;
   font-size: 14px;
-  font-weight: 620;
+  font-weight: 500;
 }
 
 .trust-panel p {
@@ -403,7 +404,7 @@ button {
 .feedback-button {
   width: 100%;
   margin-top: 14px;
-  color: #23312b;
+  color: #3a322b;
   background: transparent;
   border: 1px solid var(--line);
 }
@@ -427,8 +428,8 @@ button {
   gap: 10px;
   align-items: start;
   background: var(--warn-bg);
-  border: 1px solid #f2d59a;
-  color: #6d4300;
+  border: 1px solid #e8d3ac;
+  color: #6d5426;
 }
 
 .inline-alert svg {
@@ -441,7 +442,7 @@ button {
 
 .historical-banner {
   background: var(--accent-soft);
-  border-color: rgba(15, 127, 92, 0.28);
+  border-color: rgba(156, 83, 72, 0.24);
   color: var(--accent-strong);
 }
 
@@ -453,33 +454,33 @@ button {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .camera-screen {
   color: #fff;
-  background: #0d1211;
+  background: #151110;
 }
 
-.camera-screen .app-header {
-  background: rgba(13, 18, 17, 0.82);
-  border-color: rgba(255, 255, 255, 0.08);
+.camera-top {
+  min-height: 64px;
+  padding: 30px 12px 0;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
 }
 
-.camera-screen .app-header h1,
-.camera-screen .icon-button {
-  color: #fff;
-}
-
-.camera-screen .header-dot {
-  background: rgba(255, 255, 255, 0.72);
+.camera-top .icon-button {
+  color: #e5dccf;
 }
 
 .camera-preview {
   position: relative;
-  min-height: calc(100vh - 224px);
+  margin: 10px 14px 0;
+  min-height: calc(100vh - 320px);
   overflow: hidden;
-  background: #111;
+  border-radius: 22px;
+  background: #171310;
 }
 
 .camera-preview video {
@@ -499,75 +500,107 @@ button {
 }
 
 .camera-preview .oval-guide-good {
-  border-color: #7ee2bd;
+  border-color: #b7cba9;
 }
 
 .camera-preview .oval-guide-adjust {
-  border-color: #ffd276;
+  border-color: #e9c98e;
 }
 
-.camera-topbar {
+/* 정렬 안내는 프레임 위 알약 하나로 통합. 상태(찾는 중/조정/좋음)에 따라 색이 바뀝니다. */
+.camera-pill {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 18px;
-  display: flex;
-  justify-content: center;
-}
-
-.camera-topbar span,
-.camera-hud span {
-  background: rgba(10, 14, 13, 0.58);
-  color: #fff;
-  backdrop-filter: blur(14px);
-}
-
-.camera-topbar span {
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 36px);
+  padding: 8px 16px;
   border-radius: 999px;
-  padding: 9px 14px;
+  background: rgba(21, 17, 14, 0.72);
+  color: #f2ece2;
   font-size: 13px;
-  font-weight: 820;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(12px);
+  transition: background-color 0.2s ease;
 }
 
-.camera-hud {
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 116px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+.camera-pill-good {
+  background: rgba(62, 74, 56, 0.92);
+  color: #e4edda;
 }
 
-.camera-hud span {
-  min-height: 36px;
-  border-radius: 999px;
+.camera-pill-adjust {
+  background: rgba(122, 94, 38, 0.88);
+  color: #f7edda;
+}
+
+/* 하단 도크: 앨범 · 셔터 · 카메라 전환. 정렬이 맞으면 셔터 링이 세이지색으로 켜집니다 —
+   손가락이 가는 곳(셔터)에 준비 신호를 두는 게 오벌 테두리 색 변화보다 직관적입니다. */
+.camera-dock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px 4px;
+}
+
+.dock-side {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5dccf;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  font-size: 12px;
-  font-weight: 850;
+  cursor: pointer;
+}
+
+.dock-side svg {
+  width: 20px;
+  height: 20px;
+}
+
+.dock-side input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .shutter-button {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  width: 82px;
-  height: 82px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
-  border: 6px solid rgba(255, 255, 255, 0.66);
-  background: #fff;
-  color: var(--accent-strong);
+  border: 4px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
   display: grid;
   place-items: center;
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.42);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.shutter-button svg {
-  width: 30px;
-  height: 30px;
+.shutter-button i {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #f7eee2;
+}
+
+.shutter-button.shutter-good {
+  border-color: #93ab88;
+  box-shadow: 0 0 22px rgba(147, 171, 136, 0.45);
+}
+
+.camera-caption {
+  margin: 0;
+  padding: 10px 18px 22px;
+  text-align: center;
+  color: #8a7f76;
+  font-size: 12.5px;
+  font-weight: 500;
 }
 
 .camera-status {
@@ -582,7 +615,7 @@ button {
 }
 
 .camera-status svg {
-  color: #a8f0d4;
+  color: #c9dabc;
 }
 
 .camera-status.error {
@@ -591,26 +624,15 @@ button {
 }
 
 .camera-status.error svg {
-  color: #ffb099;
+  color: #f0b09e;
 }
 
 .camera-status p {
   margin: 0;
-  color: #d9e2de;
+  color: #e5dccf;
   font-size: 13px;
   line-height: 1.45;
-  font-weight: 680;
-}
-
-.camera-controls {
-  grid-template-columns: 0.75fr 1.25fr;
-  margin: 14px 18px 22px;
-}
-
-.camera-controls .secondary-button {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.13);
+  font-weight: 500;
 }
 
 .quality-hero {
@@ -629,7 +651,7 @@ button {
   bottom: 14px;
   padding: 15px;
   border-radius: var(--radius);
-  background: rgba(17, 24, 23, 0.78);
+  background: rgba(28, 24, 21, 0.8);
   color: #fff;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -640,9 +662,9 @@ button {
 
 .quality-verdict p {
   margin: 0;
-  color: #c7d6d0;
+  color: #cfc4b8;
   font-size: 12px;
-  font-weight: 880;
+  font-weight: 700;
 }
 
 .quality-verdict strong {
@@ -656,17 +678,17 @@ button {
   border-radius: 999px;
   padding: 8px 11px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .status-good {
-  color: #063c2b;
-  background: #7ee2bd;
+  color: #2e4426;
+  background: #b7cba9;
 }
 
 .status-warn {
-  color: #4b2c00;
-  background: #ffd276;
+  color: #4a3a1d;
+  background: #e9c98e;
 }
 
 .analyzing-status {
@@ -707,7 +729,7 @@ button {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
-  font-weight: 620;
+  font-weight: 500;
 }
 
 .quality-grid {
@@ -741,7 +763,7 @@ button {
 .quality-card-v2 span {
   color: var(--muted);
   font-size: 12px;
-  font-weight: 830;
+  font-weight: 700;
 }
 
 .quality-card-v2 strong {
@@ -752,7 +774,7 @@ button {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .gate-copy,
@@ -767,7 +789,7 @@ button {
 
 .face-alert {
   background: var(--warn-bg);
-  border: 1px solid #f2d59a;
+  border: 1px solid #e8d3ac;
   border-radius: var(--radius);
   align-items: start;
 }
@@ -780,16 +802,16 @@ button {
 .face-alert strong {
   display: block;
   margin-bottom: 4px;
-  color: #4a2d00;
+  color: #4a3a1d;
   font-size: 14px;
 }
 
 .face-alert p {
   margin: 0;
-  color: #6d4300;
+  color: #6d5426;
   font-size: 13px;
   line-height: 1.5;
-  font-weight: 620;
+  font-weight: 500;
 }
 
 .action-row {
@@ -811,67 +833,72 @@ button {
   background: transparent;
   border: 0;
   font-size: 13px;
-  font-weight: 780;
+  font-weight: 600;
 }
 
+/* 에디토리얼 화이트 카드. 점수 등급은 상단 보더와 판정 문구 색으로 드러냅니다 —
+   점수가 나쁠 때도 항상 안심되는 색으로 보이면 안 된다는 원칙은 그대로 유지. */
 .report-hero {
   margin: 18px;
   padding: 20px;
   border-radius: 20px;
-  color: #fff;
-  background:
-    linear-gradient(145deg, rgba(15, 127, 92, 0.92), rgba(17, 24, 23, 0.98)),
-    var(--dark);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 4px solid #8fa682;
 }
 
-/* 점수 등급에 따라 리포트 히어로 색을 바꿉니다. "신뢰도를 낮춰 보여준다"는 원칙이
-   점수가 나쁠 때도 항상 안심되는 초록색으로 보이면 어긋나기 때문입니다. */
 .report-hero.tone-watch {
-  background:
-    linear-gradient(145deg, rgba(182, 106, 0, 0.88), rgba(17, 24, 23, 0.98)),
-    var(--dark);
+  border-top-color: #d3a556;
 }
 
 .report-hero.tone-warn {
-  background:
-    linear-gradient(145deg, rgba(160, 43, 43, 0.88), rgba(17, 24, 23, 0.98)),
-    var(--dark);
+  border-top-color: #cd8071;
 }
 
 .report-hero p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.74);
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 880;
+  font-weight: 600;
 }
 
 .report-hero strong {
   display: block;
   margin-top: 8px;
-  font-size: 64px;
-  line-height: 0.9;
+  font-size: 62px;
+  line-height: 0.95;
   letter-spacing: 0;
 }
 
 .report-hero span {
   display: block;
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .verdict-copy {
   margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid var(--line);
 }
 
 .verdict-copy b {
   display: block;
-  font-size: 19px;
-  line-height: 1.35;
+  font-size: 18px;
+  line-height: 1.4;
+  color: #5f7a52;
+}
+
+.report-hero.tone-watch .verdict-copy b {
+  color: #96702a;
+}
+
+.report-hero.tone-warn .verdict-copy b {
+  color: #a04338;
 }
 
 .report-priority {
@@ -898,7 +925,7 @@ button {
 .evidence-card dt {
   color: var(--muted);
   font-size: 12px;
-  font-weight: 840;
+  font-weight: 700;
 }
 
 .report-priority b {
@@ -925,9 +952,9 @@ button {
   display: grid;
   place-items: center;
   color: #fff;
-  background: rgba(8, 95, 69, 0.84);
+  background: rgba(156, 83, 72, 0.85);
   font-size: 12px;
-  font-weight: 860;
+  font-weight: 700;
   transform: translate(-50%, -50%);
   white-space: nowrap;
 }
@@ -966,7 +993,7 @@ button {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
-  font-weight: 720;
+  font-weight: 600;
   text-align: right;
 }
 
@@ -997,7 +1024,7 @@ button {
 
 .metric-head span {
   font-size: 16px;
-  font-weight: 880;
+  font-weight: 700;
 }
 
 .metric-head strong {
@@ -1006,11 +1033,11 @@ button {
 }
 
 .metric-head strong.tone-watch {
-  color: #a15b00;
+  color: #96702a;
 }
 
 .metric-head strong.tone-warn {
-  color: #a02b2b;
+  color: #a04338;
 }
 
 .bar {
@@ -1018,22 +1045,23 @@ button {
   margin: 12px 0 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e7ece8;
+  background: #ede6da;
 }
 
+/* 상태 색: 좋음=세이지, 관찰=브론즈, 주의=로즈레드. 브랜드 로즈와 혼동되지 않게 채도를 낮춥니다. */
 .bar i {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent), #69a88f);
+  background: #8fa682;
 }
 
 .bar i.tone-watch {
-  background: linear-gradient(90deg, #b66a00, #e2a44c);
+  background: #d3a556;
 }
 
 .bar i.tone-warn {
-  background: linear-gradient(90deg, #a02b2b, #d97a7a);
+  background: #cd8071;
 }
 
 .recommend-card,
@@ -1073,7 +1101,7 @@ button {
 .catalog-meta span {
   color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 720;
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -1090,7 +1118,7 @@ button {
   color: var(--accent-strong);
   background: var(--accent-soft);
   font-size: 12px;
-  font-weight: 880;
+  font-weight: 700;
 }
 
 .product-list {
@@ -1119,7 +1147,7 @@ button {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 10.5px;
-  font-weight: 860;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -1144,11 +1172,11 @@ button {
   font-size: 12px;
   line-height: 1.45;
   font-style: normal;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .product-card em {
-  color: #775000;
+  color: #7a5e26;
 }
 
 .avoid-box {
@@ -1158,19 +1186,19 @@ button {
   display: grid;
   gap: 7px;
   background: var(--warn-bg);
-  border: 1px solid #f2d59a;
+  border: 1px solid #e8d3ac;
 }
 
 .avoid-box strong {
-  color: #4a2d00;
+  color: #4a3a1d;
   font-size: 13px;
 }
 
 .avoid-box span {
-  color: #6d4300;
+  color: #6d5426;
   font-size: 12px;
   line-height: 1.4;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .report-screen .feedback-button {
@@ -1193,20 +1221,20 @@ button {
   margin: 0;
   color: rgba(255, 255, 255, 0.68);
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .detail-score-card p.tone-good,
 .detail-score-card p.tone-ok {
-  color: #7ee2bd;
+  color: #b7cba9;
 }
 
 .detail-score-card p.tone-watch {
-  color: #ffd276;
+  color: #e9c98e;
 }
 
 .detail-score-card p.tone-warn {
-  color: #f5a3a3;
+  color: #e9a89b;
 }
 
 .detail-score-card strong {
@@ -1219,7 +1247,7 @@ button {
 .detail-score-card span {
   color: rgba(255, 255, 255, 0.78);
   font-size: 13px;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .evidence-card dl {
@@ -1242,18 +1270,18 @@ button {
   margin: 5px 0 0;
   font-size: 15px;
   line-height: 1.45;
-  font-weight: 720;
+  font-weight: 600;
 }
 
 .explain-card.warn {
   background: var(--warn-bg);
-  border-color: #f2d59a;
+  border-color: #e8d3ac;
 }
 
 .tone-card-good,
 .tone-card-ok {
   background: var(--accent-soft);
-  border-color: rgba(15, 127, 92, 0.28);
+  border-color: rgba(156, 83, 72, 0.24);
 }
 
 .tone-card-good h2,
@@ -1263,16 +1291,16 @@ button {
 
 .tone-card-watch {
   background: var(--warn-bg);
-  border-color: #f2d59a;
+  border-color: #e8d3ac;
 }
 
 .tone-card-warn {
-  background: #fbe4e4;
-  border-color: #f0b8b8;
+  background: #f8e4de;
+  border-color: #eebbaf;
 }
 
 .tone-card-warn h2 {
-  color: #a02b2b;
+  color: #a04338;
 }
 
 .raw-card div {
@@ -1288,10 +1316,10 @@ button {
   padding: 0 10px;
   display: flex;
   align-items: center;
-  background: #eef2ef;
-  color: #33423a;
+  background: #f2ece2;
+  color: #55493f;
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 /* .screen 자체가 min(480px, 100vw)라서, 이 폭 안에서는 어떤 실제 기기 너비든
@@ -1327,7 +1355,7 @@ button {
 @media (min-width: 700px) {
   .screen {
     min-height: min(940px, 100vh);
-    box-shadow: 0 20px 80px rgba(24, 34, 30, 0.16);
+    box-shadow: 0 20px 80px rgba(34, 30, 27, 0.14);
   }
 }
 
@@ -1363,7 +1391,7 @@ button {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
-  font-weight: 620;
+  font-weight: 500;
 }
 
 .trend-card {
@@ -1384,7 +1412,7 @@ button {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 13px;
-  font-weight: 620;
+  font-weight: 500;
 }
 
 .history-list {
@@ -1435,7 +1463,7 @@ button.history-card:hover {
 .history-legacy {
   color: var(--muted);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .history-meta {
@@ -1444,7 +1472,7 @@ button.history-card:hover {
   gap: 10px;
   color: var(--muted);
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .history-meta svg {
@@ -1458,12 +1486,12 @@ button.history-card:hover {
 .delta-flat {
   border-radius: 999px;
   padding: 4px 9px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .delta-flat {
   color: var(--muted);
-  background: #eef2ef;
+  background: #f2ece2;
 }
 
 .delta-up {
@@ -1472,8 +1500,8 @@ button.history-card:hover {
 }
 
 .delta-down {
-  color: #a02b2b;
-  background: #fbe4e4;
+  color: #a04338;
+  background: #f8e4de;
 }
 
 .clear-history {
@@ -1493,9 +1521,10 @@ button.history-card:hover {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  font-size: 27px;
-  font-weight: 920;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .brand-skin {
@@ -1504,14 +1533,6 @@ button.history-card:hover {
 
 .brand-scan {
   color: var(--accent-strong);
-}
-
-/* 워드마크 옆 캐릭터 마크. 타이틀 글자 높이(27px)에 맞춰 살짝 크게 두고 세로 중앙 정렬. */
-.brand-face {
-  height: 34px;
-  width: auto;
-  margin-right: 8px;
-  align-self: center;
 }
 
 /* ---- 하단 탭 내비게이션 ---- */
@@ -1541,7 +1562,7 @@ button.history-card:hover {
   padding-top: 9px;
   color: var(--muted);
   font-size: 11.5px;
-  font-weight: 820;
+  font-weight: 700;
 }
 
 .tab-bar button svg {
@@ -1580,7 +1601,7 @@ button.history-card:hover {
 }
 
 .dashboard-card.tone-border-warn {
-  border-left-color: #a02b2b;
+  border-left-color: #a04338;
 }
 
 .dash-top {
@@ -1589,7 +1610,7 @@ button.history-card:hover {
   align-items: center;
   color: var(--muted);
   font-size: 12.5px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .dash-score strong {
@@ -1617,7 +1638,7 @@ button.history-card:hover {
   background: var(--surface-soft);
   color: var(--accent-strong);
   font-size: 13.5px;
-  font-weight: 820;
+  font-weight: 700;
 }
 
 .dash-report-link svg {
@@ -1658,7 +1679,7 @@ button.history-card:hover {
 }
 
 .radar-now {
-  fill: rgba(15, 127, 92, 0.22);
+  fill: rgba(196, 118, 106, 0.2);
   stroke: var(--accent-strong);
   stroke-width: 2;
   stroke-linejoin: round;
@@ -1677,9 +1698,9 @@ button.history-card:hover {
 }
 
 .radar-label {
-  fill: #33423a;
+  fill: #55493f;
   font-size: 11.5px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .radar-legend {
@@ -1688,7 +1709,7 @@ button.history-card:hover {
   gap: 16px;
   padding: 6px 0 4px;
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 600;
 }
 
 .legend-now,
@@ -1729,8 +1750,8 @@ button.history-card:hover {
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--warn-bg);
-  border: 1px solid #f2d59a;
-  color: #6d4300;
+  border: 1px solid #e8d3ac;
+  color: #6d5426;
   font-size: 12.5px;
   line-height: 1.5;
   font-weight: 700;
@@ -1751,9 +1772,9 @@ button.history-card:hover {
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface);
-  color: #33423a;
+  color: #55493f;
   font-size: 12.5px;
-  font-weight: 780;
+  font-weight: 600;
   width: fit-content;
 }
 
@@ -1776,7 +1797,7 @@ button.history-card:hover {
   padding: 2.5px 8px;
   border-radius: 999px;
   font-size: 10.5px;
-  font-weight: 860;
+  font-weight: 700;
   font-style: normal;
   vertical-align: 2px;
   white-space: nowrap;
@@ -1788,14 +1809,14 @@ button.history-card:hover {
 }
 
 .tier-reference {
-  color: #4a5a52;
-  background: #e7ece8;
+  color: #6f655c;
+  background: #ede6da;
 }
 
 .tier-experimental {
-  color: #7a5200;
+  color: #7a5e26;
   background: var(--warn-bg);
-  border: 1px solid #f2d59a;
+  border: 1px solid #e8d3ac;
 }
 
 .tier-legend {
@@ -1811,7 +1832,7 @@ button.history-card:hover {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .tier-legend .tier-badge {
@@ -1826,11 +1847,211 @@ button.history-card:hover {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
-  font-weight: 680;
+  font-weight: 500;
 }
 
 .detail-score-card span .tier-badge {
   margin-left: 0;
   margin-right: 8px;
   vertical-align: 1px;
+}
+
+/* ---- 에디토리얼 타이포그래피: 숫자와 제목은 명조(고운바탕) ---- */
+
+.app-header h1,
+.section-title h2,
+.recommend-card h2,
+.evidence-card h2,
+.explain-card h2,
+.raw-card h2,
+.report-hero strong,
+.dash-score strong,
+.quality-verdict strong,
+.detail-score-card strong,
+.metric-head strong,
+.capture-hero h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* ---- 리포트 세그먼트 탭 (요약/상세/케어) ---- */
+
+.segmented {
+  display: flex;
+  margin: 12px 18px 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: #f0e9df;
+}
+
+.segmented button {
+  flex: 1;
+  border: 0;
+  padding: 9px 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.segmented button.active {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+/* ---- 촬영 세션 단계 표시 (촬영·확인·분석) ---- */
+
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px 0;
+}
+
+.step-dots span {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.step-dots span.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.step-dots.on-dark {
+  padding: 0;
+}
+
+.step-dots.on-dark span {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #cfc4b8;
+}
+
+.step-dots.on-dark span.active {
+  background: #f7eee2;
+  border-color: #f7eee2;
+  color: #221e1b;
+}
+
+/* ---- 홈 일기: 날짜/기록일수, 주간 스트립, 핵심 지표 추세 ---- */
+
+.diary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 2px 0;
+}
+
+.diary-date {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.streak-chip {
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.week-card {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+}
+
+.week-day {
+  text-align: center;
+}
+
+.week-day p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.week-day .dot {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.week-day .dot-done {
+  background: var(--accent);
+}
+
+.week-day .dot-today {
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+}
+
+.week-day .dot-future {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+}
+
+.core-trends {
+  margin-top: 10px;
+  padding: 4px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.core-trends.empty {
+  padding: 14px 16px;
+}
+
+.core-trends.empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.core-trend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--surface-soft);
+}
+
+.core-trend-row:last-child {
+  border-bottom: 0;
+}
+
+.core-trend-row span {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.core-trend-row strong {
+  min-width: 30px;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
 }

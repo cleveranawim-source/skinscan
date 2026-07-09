@@ -27,6 +27,9 @@ export function App() {
   const [history, setHistory] = useState(() => getHistory());
   const [historyEntry, setHistoryEntry] = useState(null);
   const [historyMetric, setHistoryMetric] = useState(null);
+  // 리포트 세그먼트 탭(요약/상세/케어). App이 들고 있어야 상세 화면에 다녀와도
+  // 보던 탭이 유지됩니다. 새 리포트를 열 때만 요약으로 리셋합니다.
+  const [reportTab, setReportTab] = useState('summary');
   // 카메라 촬영 직후 확인 단계용. 사용자가 "이 사진으로 분석"을 눌러야 리포트로 넘어갑니다.
   const [captured, setCaptured] = useState(null);
   // 확인 단계에서 미리 계산해두는 품질 결과. 셔터를 누른 직후 백그라운드로 계산해서
@@ -59,6 +62,7 @@ export function App() {
   async function runAnalysis(url, image) {
     setImageUrl(url);
     setAnalysis(null);
+    setReportTab('summary');
     setErrorMessage('');
     setStage('analyzing');
     try {
@@ -113,6 +117,7 @@ export function App() {
   function handleConfirmFromReview() {
     if (reviewAnalysis) {
       if (reviewAnalysis.analysisBlocked) return;
+      setReportTab('summary');
       setImageUrl(captured.url);
       setAnalysis(reviewAnalysis);
       if (reviewAnalysis.qualityScore >= AUTO_PASS_QUALITY) {
@@ -136,6 +141,7 @@ export function App() {
 
   function handleAnalyze() {
     saveAnalysisOnce(analysis);
+    setReportTab('summary');
     setStage('report');
   }
 
@@ -153,6 +159,7 @@ export function App() {
   function openHistoryEntry(entry) {
     setHistoryEntry(entry);
     setHistoryMetric(null);
+    setReportTab('summary');
     setStage('historyReport');
   }
 
@@ -191,6 +198,8 @@ export function App() {
         analysis={historyEntry}
         previousEntry={historyPrevious}
         historical
+        tab={reportTab}
+        onTabChange={setReportTab}
         onBack={() => {
           setHistoryEntry(null);
           setStage('history');
@@ -209,6 +218,8 @@ export function App() {
         imageUrl={imageUrl}
         analysis={analysis}
         previousEntry={previousEntry}
+        tab={reportTab}
+        onTabChange={setReportTab}
         onBack={() => setStage('quality')}
         onOpenHistory={() => setStage('history')}
         onReviewQuality={() => setStage('quality')}
@@ -243,7 +254,7 @@ export function App() {
   } else if (stage === 'analyzing') {
     screen = <AnalyzingScreen imageUrl={imageUrl} />;
   } else if (stage === 'camera') {
-    screen = <CameraScreen onClose={() => setStage('empty')} onCaptured={handleCaptured} />;
+    screen = <CameraScreen onClose={() => setStage('empty')} onCaptured={handleCaptured} onUpload={handleUpload} />;
   } else {
     screen = (
       <EmptyScreen
