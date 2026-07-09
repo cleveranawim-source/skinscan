@@ -9,6 +9,12 @@ const DETECT_INTERVAL_MS = 150;
 const BURST_FRAME_COUNT = 3;
 const BURST_GAP_MS = 90;
 
+// 자동 촬영: 셔터를 누르는 동작 자체가 손떨림(선명도 차단)의 주 원인이라,
+// 정렬이 안정적으로 유지되면 카운트다운 후 자동으로 찍습니다. 수동 셔터는 그대로 유지.
+const AUTO_ARM_DELAY_MS = 1800; // 카메라 진입/재진입 직후엔 발동 잠금 (재촬영 루프 방지)
+const AUTO_STABLE_MS = 900; // 이 시간 동안 '좋음' 상태가 유지돼야 카운트다운 시작
+const AUTO_COUNT_TICK_MS = 700; // 3→2→1 한 칸의 길이. 카운트 중 정렬이 깨지면 취소.
+
 function evaluateGuide(geometry) {
   if (geometry.sizeRatio < 0.32) {
     return { status: 'adjust', message: '조금 더 가까이 와주세요' };
@@ -48,6 +54,15 @@ export function CameraScreen({ onClose, onCaptured, onUpload }) {
   const [capturing, setCapturing] = useState(false);
   const [facingMode, setFacingMode] = useState('user');
   const [guide, setGuide] = useState({ status: 'searching', message: '얼굴을 찾는 중이에요' });
+  // 자동 촬영 카운트다운(3/2/1, 비활성이면 null). 판정 자체는 인터벌 안에서 ref로 합니다 —
+  // 인터벌 클로저가 오래된 state를 붙잡는 문제를 피하기 위해서입니다.
+  const [countdown, setCountdown] = useState(null);
+  const guideRef = useRef(guide);
+  guideRef.current = guide;
+  const capturingRef = useRef(false);
+  const armedAtRef = useRef(0);
+  const goodSinceRef = useRef(null);
+  const countStartRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,8 +153,10 @@ export function CameraScreen({ onClose, onCaptured, onUpload }) {
 
   async function captureFrame() {
     const video = videoRef.current;
-    if (!video || !ready || capturing) return;
+    if (!video || !ready || capturingRef.current) return;
+    capturingRef.current = true;
     setCapturing(true);
+    setCountdown(null);
     try {
       const canvas = await captureBurst(video, BURST_FRAME_COUNT, BURST_GAP_MS);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
@@ -147,9 +164,46 @@ export function CameraScreen({ onClose, onCaptured, onUpload }) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       onCaptured(dataUrl, image);
     } finally {
+      capturingRef.current = false;
       setCapturing(false);
     }
   }
+
+  // 자동 촬영 판정 루프. '좋음'이 AUTO_STABLE_MS 이상 유지되면 카운트다운을 시작하고,
+  // 도중에 정렬이 깨지면 처음부터 다시 셉니다. 진입 직후 AUTO_ARM_DELAY_MS 동안은
+  // 발동을 잠가서, 재촬영으로 돌아오자마자 바로 찍혀버리는 루프를 막습니다.
+  useEffect(() => {
+    if (!ready) return undefined;
+    armedAtRef.current = Date.now();
+    goodSinceRef.current = null;
+    countStartRef.current = null;
+    setCountdown(null);
+    const id = setInterval(() => {
+      if (capturingRef.current) return;
+      const now = Date.now();
+      if (guideRef.current.status !== 'good') {
+        goodSinceRef.current = null;
+        if (countStartRef.current !== null) {
+          countStartRef.current = null;
+          setCountdown(null);
+        }
+        return;
+      }
+      if (goodSinceRef.current === null) goodSinceRef.current = now;
+      if (now - armedAtRef.current < AUTO_ARM_DELAY_MS) return;
+      if (now - goodSinceRef.current < AUTO_STABLE_MS) return;
+      if (countStartRef.current === null) countStartRef.current = now;
+      const step = 3 - Math.floor((now - countStartRef.current) / AUTO_COUNT_TICK_MS);
+      if (step <= 0) {
+        countStartRef.current = null;
+        goodSinceRef.current = null;
+        captureFrame();
+      } else {
+        setCountdown(step);
+      }
+    }, 120);
+    return () => clearInterval(id);
+  }, [ready]);
 
   return (
     <main className="screen camera-screen">
@@ -164,8 +218,13 @@ export function CameraScreen({ onClose, onCaptured, onUpload }) {
         <video ref={videoRef} playsInline muted />
         <div className={`oval-guide oval-guide-${guide.status}`} />
         <div className={`camera-pill camera-pill-${guide.status}`} aria-live="polite">
-          {ready ? guide.message : '카메라를 준비하는 중이에요'}
+          {!ready ? '카메라를 준비하는 중이에요' : countdown ? `그대로 계세요, 곧 찍을게요 · ${countdown}` : guide.message}
         </div>
+        {countdown && (
+          <div className="camera-countdown" aria-hidden="true">
+            {countdown}
+          </div>
+        )}
       </section>
       {error && (
         <section className="camera-status error">
@@ -194,7 +253,9 @@ export function CameraScreen({ onClose, onCaptured, onUpload }) {
           <SwitchCamera />
         </button>
       </div>
-      <p className="camera-caption">{capturing ? '촬영 중입니다…' : '얼굴이 타원에 맞으면 셔터 링이 초록으로 켜져요'}</p>
+      <p className="camera-caption">
+        {capturing ? '촬영 중입니다…' : '정렬이 맞으면 3초 뒤 자동으로 찍혀요 · 셔터로 바로 찍을 수도 있어요'}
+      </p>
     </main>
   );
 }

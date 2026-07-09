@@ -2055,3 +2055,23 @@ button.history-card:hover {
   font-size: 17px;
   font-weight: 700;
 }
+
+/* ---- 자동 촬영 카운트다운 ---- */
+
+.camera-countdown {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(21, 17, 14, 0.55);
+  backdrop-filter: blur(6px);
+  color: #f7eee2;
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 700;
+}
